@@ -34,7 +34,11 @@ func main() {
 		log.Println("db connection closed")
 	}(db)
 
-	storage := repo.NewPaymentRepository(db)
+	storage, err := repo.NewPaymentRepository(db)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	_ = storage
 
 	log.Println("db connection opened")
