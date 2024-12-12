@@ -5,10 +5,10 @@ import (
 
 	bolt "go.etcd.io/bbolt"
 
-	"github.com/Anton-Kraev/gopay/internal/models/payment"
+	"github.com/Anton-Kraev/gopay/models"
 )
 
-func (r PaymentRepository) SetLink(id payment.ID, link payment.Link) error {
+func (r PaymentRepository) SetLink(id models.ID, link models.Link) error {
 	const op = "PaymentRepository.SetLink"
 
 	if err := r.db.Update(func(tx *bolt.Tx) error {
@@ -22,14 +22,14 @@ func (r PaymentRepository) SetLink(id payment.ID, link payment.Link) error {
 	return nil
 }
 
-func (r PaymentRepository) GetLink(id payment.ID) (payment.Link, error) {
+func (r PaymentRepository) GetLink(id models.ID) (models.Link, error) {
 	const op = "PaymentRepository.GetLink"
 
-	var link payment.Link
+	var link models.Link
 
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(linkBucket)
-		link = payment.Link(b.Get([]byte(id)))
+		link = models.Link(b.Get([]byte(id)))
 
 		return nil
 	}); err != nil {

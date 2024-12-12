@@ -6,13 +6,13 @@ import (
 
 	bolt "go.etcd.io/bbolt"
 
-	"github.com/Anton-Kraev/gopay/internal/models/payment"
+	"github.com/Anton-Kraev/gopay/models"
 )
 
-func (r PaymentRepository) Get(id payment.ID) (payment.Payment, error) {
+func (r PaymentRepository) Get(id models.ID) (models.Payment, error) {
 	const op = "PaymentRepository.Get"
 
-	var pay payment.Payment
+	var pay models.Payment
 
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(paymentBucket)
@@ -24,13 +24,13 @@ func (r PaymentRepository) Get(id payment.ID) (payment.Payment, error) {
 
 		return json.Unmarshal(binPay, &pay)
 	}); err != nil {
-		return payment.Payment{}, fmt.Errorf("%s: %w", op, err)
+		return models.Payment{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return pay, nil
 }
 
-func (r PaymentRepository) Set(id payment.ID, pay payment.Payment) error {
+func (r PaymentRepository) Set(id models.ID, pay models.Payment) error {
 	const op = "PaymentRepository.SetLink"
 
 	if err := r.db.Update(func(tx *bolt.Tx) error {
@@ -49,7 +49,7 @@ func (r PaymentRepository) Set(id payment.ID, pay payment.Payment) error {
 	return nil
 }
 
-func (r PaymentRepository) UpdateStatus(id payment.ID, status payment.Status) error {
+func (r PaymentRepository) UpdateStatus(id models.ID, status models.Status) error {
 	const op = "PaymentRepository.UpdateStatus"
 
 	pay, err := r.Get(id)
