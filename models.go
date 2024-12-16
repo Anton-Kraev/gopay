@@ -1,4 +1,4 @@
-package models
+package gopay
 
 type ID string
 
