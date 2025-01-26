@@ -3,10 +3,11 @@ package yookassa
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
+
+	"github.com/Anton-Kraev/gopay"
 )
 
 type Client struct {
@@ -23,14 +24,14 @@ func NewClient(checkoutURL string, config Config) Client {
 	}
 }
 
-func (c Client) CreatePayment(userID, description string, amount int) (*Payment, error) {
+func (c Client) CreatePayment(userID gopay.ID, template gopay.PaymentTemplate) (*Payment, error) {
 	const op = "Client.CreatePayment"
 
 	uid := uuid.New().String()
 	payment := &Payment{
 		Amount: Amount{
-			Value:    strconv.Itoa(amount),
-			Currency: "RUB",
+			Value:    fmt.Sprintf("%d", template.Amount),
+			Currency: template.Currency,
 		},
 		Confirmation: Confirmation{
 			Type:      "redirect",
@@ -38,9 +39,9 @@ func (c Client) CreatePayment(userID, description string, amount int) (*Payment,
 		},
 		Metadata: Metadata{
 			OrderID: uid,
-			UserID:  userID,
+			UserID:  string(userID),
 		},
-		Description: description,
+		Description: template.Description,
 		Capture:     true,
 	}
 
