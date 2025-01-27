@@ -19,20 +19,18 @@ type User struct {
 
 type Link string
 
-type Links struct {
+type Payment struct {
+	User         User   `json:"user"`
+	Amount       uint   `json:"amount"`
 	Status       Status `json:"status"`
 	PaymentLink  Link   `json:"payment_link"`
 	ResourceLink Link   `json:"resource_link"`
 }
 
-type Payment struct {
-	User   User   `json:"user"`
-	Price  uint   `json:"price"`
-	Status Status `json:"status"`
-}
-
 type PaymentTemplate struct {
-	Currency    string `json:"currency"`
-	Amount      uint   `json:"amount"`
-	Description string `json:"description"`
+	Currency     string `json:"currency"`
+	Amount       uint   `json:"amount"`
+	Description  string `json:"description"`
+	PaymentLink  Link   `json:"payment_link"`
+	ResourceLink Link   `json:"resource_link"`
 }
