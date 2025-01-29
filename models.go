@@ -1,6 +1,12 @@
 package gopay
 
+import "net/url"
+
 type ID string
+
+func (id ID) IsValid() bool {
+	return id != ""
+}
 
 type Status string
 
@@ -18,6 +24,12 @@ type User struct {
 }
 
 type Link string
+
+func (l Link) IsValid() bool {
+	_, err := url.ParseRequestURI(string(l))
+
+	return err == nil
+}
 
 type Payment struct {
 	User         User   `json:"user"`
