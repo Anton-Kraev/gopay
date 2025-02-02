@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -36,12 +37,17 @@ type newPaymentRequest struct {
 }
 
 func (h Handler) NewPayment(c echo.Context) error {
-	// logs and metrics and wrap error
 	// admin auth
+	log := slog.Default().With(
+		slog.String("op", "Handler.NewPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
 
 	var req newPaymentRequest
 	if err := c.Bind(&req); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
 	// validate request
@@ -49,32 +55,49 @@ func (h Handler) NewPayment(c echo.Context) error {
 	// pass request id
 	link, err := h.paymentManager.CreatePayment(req.Template, req.User)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "create payment failed")
 	}
 
 	if !link.IsValid() {
+		log.Error("created link is invalid")
+
 		return c.String(http.StatusInternalServerError, "created link is invalid")
 	}
+
+	log.Info("success payment created")
 
 	return c.String(http.StatusOK, string(link))
 }
 
 func (h Handler) Redirect(c echo.Context) error {
-	// logs and metrics and wrap error
+	log := slog.Default().With(
+		slog.String("op", "Handler.NewPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
 
 	id := gopay.ID(c.Param("id"))
 	if !id.IsValid() {
-		return c.String(http.StatusBadRequest, "id is invalid")
+		log.Error("invalid request: bad id")
+
+		return c.String(http.StatusBadRequest, "invalid request: bad id")
 	}
 
 	link, err := h.paymentManager.GetRedirectLink(id)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "get redirect link failed")
 	}
 
 	if !link.IsValid() {
+		log.Error("redirect link is invalid")
+
 		return c.String(http.StatusInternalServerError, "redirect link is invalid")
 	}
+
+	log.Info("success get redirect link")
 
 	return c.Redirect(http.StatusTemporaryRedirect, string(link))
 }
@@ -85,35 +108,53 @@ type checkoutRequest struct {
 }
 
 func (h Handler) Checkout(c echo.Context) error {
-	// logs and metrics and wrap error
 	// payment service auth
+	log := slog.Default().With(
+		slog.String("op", "Handler.NewPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
 
 	var req checkoutRequest
 	if err := c.Bind(&req); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
 	// validate request
 
 	if err := h.paymentManager.UpdatePaymentStatus(req.ID, req.Status); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "update payment status failed")
 	}
+
+	log.Info("success payment updated")
 
 	return c.NoContent(http.StatusOK)
 }
 
 func (h Handler) File(c echo.Context) error {
-	// logs and metrics and wrap error
+	log := slog.Default().With(
+		slog.String("op", "Handler.NewPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
 
 	id := gopay.ID(c.Param("id"))
 	if !id.IsValid() {
-		return c.String(http.StatusBadRequest, "id is invalid")
+		log.Error("invalid request: bad id")
+
+		return c.String(http.StatusBadRequest, "invalid request: bad id")
 	}
 
 	data, err := h.fileStorage.GetData(id)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "get file failed")
 	}
+
+	log.Info("success get file data")
 
 	return c.Blob(http.StatusOK, "application/pdf", data)
 }

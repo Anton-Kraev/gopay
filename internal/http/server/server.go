@@ -3,6 +3,9 @@ package server
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	slogecho "github.com/samber/slog-echo"
+
+	"github.com/Anton-Kraev/gopay/internal/logger"
 )
 
 type handlers interface {
@@ -12,11 +15,12 @@ type handlers interface {
 	File(c echo.Context) error
 }
 
-func InitRoutes(handlers handlers) *echo.Echo {
+func InitRoutes(env string, handlers handlers) *echo.Echo {
 	e := echo.New()
 
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.RequestID())
+	e.Use(slogecho.New(logger.Setup(env)))
 
 	e.POST("/:id", handlers.NewPayment)
 	e.GET("/:id", handlers.Redirect)
