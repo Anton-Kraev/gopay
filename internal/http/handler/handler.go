@@ -57,8 +57,7 @@ func (h Handler) NewPayment(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	// pass request id
-	link, err := h.paymentManager.CreatePayment(req.Template, req.User)
+	link, err := h.paymentManager.CreatePayment(req.ID, req.Template, req.User)
 	if err != nil {
 		log.Error(err.Error())
 
