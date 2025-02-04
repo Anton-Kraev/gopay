@@ -46,13 +46,13 @@ func NewPaymentManager(
 	}
 }
 
-func (pm *PaymentManager) CreatePayment(templateName string, user User) (Link, error) {
+func (pm *PaymentManager) CreatePayment(id ID, templateName string, user User) (Link, error) {
 	template, err := pm.templates.GetTemplate(templateName)
 	if err != nil {
 		return "", err
 	}
 
-	payment, err := pm.payments.CreatePayment(user.ID, template)
+	payment, err := pm.payments.CreatePayment(id, template)
 	if err != nil {
 		return "", err
 	}
@@ -65,15 +65,15 @@ func (pm *PaymentManager) CreatePayment(templateName string, user User) (Link, e
 	payment.PaymentLink = template.PaymentLink
 	payment.ResourceLink = template.ResourceLink
 
-	if err = pm.storage.Set(user.ID, *payment); err != nil {
+	if err = pm.storage.Set(id, *payment); err != nil {
 		return "", err
 	}
 
-	if err = pm.storage.SetLink(user.ID, payment.PaymentLink); err != nil {
+	if err = pm.storage.SetLink(id, payment.PaymentLink); err != nil {
 		return "", err
 	}
 
-	return pm.links.GenerateLink(user.ID)
+	return pm.links.GenerateLink(id)
 }
 
 func (pm *PaymentManager) GetRedirectLink(id ID) (Link, error) {

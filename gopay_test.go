@@ -37,6 +37,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 
 	type (
 		args struct {
+			id       gopay.ID
 			template string
 			user     gopay.User
 		}
@@ -70,8 +71,8 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error create payment",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
-				user:     gopay.User{ID: gopay.ID("1")},
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
@@ -87,8 +88,8 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error empty payment",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
-				user:     gopay.User{ID: gopay.ID("1")},
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
@@ -104,8 +105,8 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error set payment",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
-				user:     gopay.User{ID: gopay.ID("1")},
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
@@ -123,8 +124,8 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error set link",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
-				user:     gopay.User{ID: gopay.ID("1")},
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
@@ -144,8 +145,8 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error generate link",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
-				user:     gopay.User{ID: gopay.ID("1")},
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
@@ -167,6 +168,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "success",
 			args: args{
+				id:       gopay.ID("1"),
 				template: "payment_template",
 				user: gopay.User{
 					ID:    "1",
@@ -211,7 +213,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 			mf, pm := setupMocks(ctrl)
 			tt.setupMocks(mf)
 
-			link, err := pm.CreatePayment(tt.args.template, tt.args.user)
+			link, err := pm.CreatePayment(tt.args.id, tt.args.template, tt.args.user)
 
 			if tt.expected.err != nil {
 				require.EqualError(t, err, tt.expected.err.Error())
