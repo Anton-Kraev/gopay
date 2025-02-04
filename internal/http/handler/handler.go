@@ -31,13 +31,14 @@ func NewHandler(paymentManager *gopay.PaymentManager, auth auth, fileStorage fil
 }
 
 type newPaymentRequest struct {
-	ID       gopay.ID   `param:"id"`
-	Template string     `json:"template"`
+	ID       gopay.ID   `param:"id" validate:"required,id"`
+	Template string     `json:"template" validate:"required"`
 	User     gopay.User `json:"user"`
 }
 
 func (h Handler) NewPayment(c echo.Context) error {
-	// admin auth
+	// TODO: admin auth
+
 	log := slog.Default().With(
 		slog.String("op", "Handler.NewPayment"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
@@ -50,7 +51,11 @@ func (h Handler) NewPayment(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	// validate request
+	if err := c.Validate(&req); err != nil {
+		log.Error(err.Error())
+
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
 
 	// pass request id
 	link, err := h.paymentManager.CreatePayment(req.Template, req.User)
@@ -60,7 +65,7 @@ func (h Handler) NewPayment(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "create payment failed")
 	}
 
-	if !link.IsValid() {
+	if !link.Validate() {
 		log.Error("created link is invalid")
 
 		return c.String(http.StatusInternalServerError, "created link is invalid")
@@ -78,7 +83,7 @@ func (h Handler) Redirect(c echo.Context) error {
 	)
 
 	id := gopay.ID(c.Param("id"))
-	if !id.IsValid() {
+	if !id.Validate() {
 		log.Error("invalid request: bad id")
 
 		return c.String(http.StatusBadRequest, "invalid request: bad id")
@@ -91,7 +96,7 @@ func (h Handler) Redirect(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "get redirect link failed")
 	}
 
-	if !link.IsValid() {
+	if !link.Validate() {
 		log.Error("redirect link is invalid")
 
 		return c.String(http.StatusInternalServerError, "redirect link is invalid")
@@ -103,12 +108,13 @@ func (h Handler) Redirect(c echo.Context) error {
 }
 
 type checkoutRequest struct {
-	ID     gopay.ID     `json:"id"`
-	Status gopay.Status `json:"status"`
+	ID     gopay.ID     `json:"id" validate:"required,id"`
+	Status gopay.Status `json:"status" validate:"required,status"`
 }
 
 func (h Handler) Checkout(c echo.Context) error {
-	// payment service auth
+	// TODO: payment service auth
+
 	log := slog.Default().With(
 		slog.String("op", "Handler.NewPayment"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
@@ -121,7 +127,11 @@ func (h Handler) Checkout(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	// validate request
+	if err := c.Validate(&req); err != nil {
+		log.Error(err.Error())
+
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
 
 	if err := h.paymentManager.UpdatePaymentStatus(req.ID, req.Status); err != nil {
 		log.Error(err.Error())
@@ -141,7 +151,7 @@ func (h Handler) File(c echo.Context) error {
 	)
 
 	id := gopay.ID(c.Param("id"))
-	if !id.IsValid() {
+	if !id.Validate() {
 		log.Error("invalid request: bad id")
 
 		return c.String(http.StatusBadRequest, "invalid request: bad id")

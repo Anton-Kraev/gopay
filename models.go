@@ -1,10 +1,13 @@
 package gopay
 
-import "net/url"
+import (
+	"net/url"
+	"slices"
+)
 
 type ID string
 
-func (id ID) IsValid() bool {
+func (id ID) Validate() bool {
 	return id != ""
 }
 
@@ -17,15 +20,24 @@ const (
 	StatusCancelled         Status = "cancelled"
 )
 
+func (s Status) Validate() bool {
+	return slices.Contains([]Status{
+		StatusPending,
+		StatusWaitingForCapture,
+		StatusSucceeded,
+		StatusCancelled,
+	}, s)
+}
+
 type User struct {
-	ID    ID     `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID    ID     `json:"id" validate:"required,id"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type Link string
 
-func (l Link) IsValid() bool {
+func (l Link) Validate() bool {
 	_, err := url.ParseRequestURI(string(l))
 
 	return err == nil
