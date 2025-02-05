@@ -11,8 +11,7 @@ type Confirmation struct {
 }
 
 type Metadata struct {
-	OrderID string `json:"order_id"`
-	UserID  string `json:"user_id"`
+	ID string `json:"id"`
 }
 
 type Payment struct {

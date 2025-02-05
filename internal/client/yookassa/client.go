@@ -24,7 +24,7 @@ func NewClient(checkoutURL string, config Config) Client {
 	}
 }
 
-func (c Client) CreatePayment(userID gopay.ID, template gopay.PaymentTemplate) (*Payment, error) {
+func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*Payment, error) {
 	const op = "Client.CreatePayment"
 
 	uid := uuid.New().String()
@@ -38,8 +38,7 @@ func (c Client) CreatePayment(userID gopay.ID, template gopay.PaymentTemplate) (
 			ReturnURL: c.checkoutURL,
 		},
 		Metadata: Metadata{
-			OrderID: uid,
-			UserID:  string(userID),
+			ID: string(id),
 		},
 		Description: template.Description,
 		Capture:     true,

@@ -24,7 +24,7 @@ type (
 	}
 
 	paymentService interface {
-		CreatePayment(userID ID, template PaymentTemplate) (*Payment, error)
+		CreatePayment(id ID, template PaymentTemplate) (*Payment, error)
 	}
 )
 
