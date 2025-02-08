@@ -77,7 +77,7 @@ func (h Handler) NewPayment(c echo.Context) error {
 
 func (h Handler) Redirect(c echo.Context) error {
 	log := slog.Default().With(
-		slog.String("op", "Handler.NewPayment"),
+		slog.String("op", "Handler.Redirect"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
 	)
 
@@ -107,7 +107,7 @@ func (h Handler) Redirect(c echo.Context) error {
 }
 
 type checkoutRequest struct {
-	ID     gopay.ID     `json:"id" validate:"required,id"`
+	ID     gopay.ID     `param:"id" validate:"required,id"`
 	Status gopay.Status `json:"status" validate:"required,status"`
 }
 
@@ -115,7 +115,7 @@ func (h Handler) Checkout(c echo.Context) error {
 	// TODO: payment service auth
 
 	log := slog.Default().With(
-		slog.String("op", "Handler.NewPayment"),
+		slog.String("op", "Handler.Checkout"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
 	)
 
@@ -145,7 +145,7 @@ func (h Handler) Checkout(c echo.Context) error {
 
 func (h Handler) File(c echo.Context) error {
 	log := slog.Default().With(
-		slog.String("op", "Handler.NewPayment"),
+		slog.String("op", "Handler.File"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
 	)
 

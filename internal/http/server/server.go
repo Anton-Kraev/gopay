@@ -18,18 +18,20 @@ type handlers interface {
 }
 
 type Server struct {
+	handlers  handlers
 	logger    *slog.Logger
 	validator *validator.Validator
 }
 
-func NewServer(logger *slog.Logger, validator *validator.Validator) Server {
+func NewServer(handlers handlers, logger *slog.Logger, validator *validator.Validator) Server {
 	return Server{
+		handlers:  handlers,
 		logger:    logger,
 		validator: validator,
 	}
 }
 
-func (s Server) InitRoutes(handlers handlers) *echo.Echo {
+func (s Server) InitRoutes() *echo.Echo {
 	e := echo.New()
 
 	e.Validator = s.validator
@@ -38,10 +40,10 @@ func (s Server) InitRoutes(handlers handlers) *echo.Echo {
 	e.Use(middleware.RequestID())
 	e.Use(slogecho.New(s.logger))
 
-	e.POST("/:id", handlers.NewPayment)
-	e.GET("/:id", handlers.Redirect)
-	e.POST("/payment/:id", handlers.Checkout)
-	e.GET("/file/:id", handlers.File)
+	e.POST("/:id", s.handlers.NewPayment)
+	e.GET("/:id", s.handlers.Redirect)
+	e.POST("/payment/:id", s.handlers.Checkout)
+	e.GET("/file/:id", s.handlers.File)
 
 	return e
 }
