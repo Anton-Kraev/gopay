@@ -10,16 +10,21 @@ import (
 	"github.com/Anton-Kraev/gopay"
 )
 
+const (
+	baseURL               = "https://api.yookassa.ru/v3"
+	createPaymentEndpoint = "/payments"
+)
+
 type Client struct {
 	checkoutURL string
 	http        *resty.Client
 }
 
-func NewClient(checkoutURL string, config Config) Client {
+func NewClient(checkoutURL string, config AuthConfig) Client {
 	return Client{
 		checkoutURL: checkoutURL,
 		http: resty.New().
-			SetBaseURL(config.URL).
+			SetBaseURL(baseURL).
 			SetBasicAuth(config.ID, config.Token),
 	}
 }
@@ -48,7 +53,7 @@ func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gop
 		SetBody(payment).
 		SetResult(payment).
 		SetHeader("Idempotence-Key", uid).
-		Post("/payments")
+		Post(createPaymentEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
