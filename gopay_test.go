@@ -112,7 +112,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
 					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
-					Return(&gopay.Payment{User: gopay.User{ID: "1"}}, nil).Times(1)
+					Return(&gopay.Payment{}, nil).Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
 					Return(errors.New("error set payment")).Times(1)
 			},
@@ -129,9 +129,9 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{PaymentLink: "payment"}, nil).Times(1)
-				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{PaymentLink: "payment"}).
-					Return(&gopay.Payment{User: gopay.User{ID: "1"}}, nil).Times(1)
+					Return(gopay.PaymentTemplate{}, nil).Times(1)
+				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
+					Return(&gopay.Payment{PaymentLink: "payment"}, nil).Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
 					Return(nil).Times(1)
 				f.mockStorage.EXPECT().SetLink(gopay.ID("1"), gopay.Link("payment")).
@@ -178,9 +178,10 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 			},
 			setupMocks: func(f mockFields) {
 				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{PaymentLink: "payment", ResourceLink: "resource"}, nil).Times(1)
-				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{PaymentLink: "payment", ResourceLink: "resource"}).
-					Return(&gopay.Payment{Amount: 100, Status: gopay.StatusPending}, nil).Times(1)
+					Return(gopay.PaymentTemplate{ResourceLink: "resource"}, nil).Times(1)
+				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{ResourceLink: "resource"}).
+					Return(&gopay.Payment{Amount: 100, Status: gopay.StatusPending, PaymentLink: "payment"}, nil).
+					Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
 					DoAndReturn(func(id gopay.ID, payment gopay.Payment) error {
 						if payment.Amount != 100 || payment.Status != gopay.StatusPending {

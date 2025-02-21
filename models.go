@@ -55,6 +55,5 @@ type PaymentTemplate struct {
 	Currency     string `json:"currency"`
 	Amount       uint   `json:"amount"`
 	Description  string `json:"description"`
-	PaymentLink  Link   `json:"payment_link"`
 	ResourceLink Link   `json:"resource_link"`
 }

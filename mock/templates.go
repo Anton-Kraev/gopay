@@ -15,7 +15,6 @@ func (t Templates) GetTemplate(_ string) (gopay.PaymentTemplate, error) {
 		Currency:     "RUB",
 		Amount:       100,
 		Description:  "description",
-		PaymentLink:  "https://github.com/Anton-Kraev/gopay",
 		ResourceLink: "http://127.0.0.1:1323/file/123",
 	}, nil
 }
