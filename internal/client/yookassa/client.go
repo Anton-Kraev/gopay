@@ -24,7 +24,7 @@ func NewClient(checkoutURL string, config Config) Client {
 	}
 }
 
-func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*Payment, error) {
+func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gopay.Payment, error) {
 	const op = "Client.CreatePayment"
 
 	uid := uuid.New().String()
@@ -48,7 +48,7 @@ func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*Pay
 		SetBody(payment).
 		SetResult(payment).
 		SetHeader("Idempotence-Key", uid).
-		Post("/payment")
+		Post("/payments")
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -61,5 +61,9 @@ func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*Pay
 		return nil, fmt.Errorf("%s: empty payment ID", op)
 	}
 
-	return payment, nil
+	return &gopay.Payment{
+		Amount:      template.Amount,
+		Status:      gopay.Status(payment.Status),
+		PaymentLink: gopay.Link(payment.Confirmation.ConfirmationURL),
+	}, nil
 }

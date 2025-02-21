@@ -6,8 +6,9 @@ type Amount struct {
 }
 
 type Confirmation struct {
-	Type      string `json:"type"`
-	ReturnURL string `json:"return_url"`
+	Type            string `json:"type"`
+	ReturnURL       string `json:"return_url"`
+	ConfirmationURL string `json:"confirmation_url"`
 }
 
 type Metadata struct {
@@ -16,6 +17,7 @@ type Metadata struct {
 
 type Payment struct {
 	ID           string       `json:"id"`
+	Status       string       `json:"status"`
 	Amount       Amount       `json:"amount"`
 	Confirmation Confirmation `json:"confirmation"`
 	Metadata     Metadata     `json:"metadata"`
