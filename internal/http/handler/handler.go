@@ -9,23 +9,18 @@ import (
 	"github.com/Anton-Kraev/gopay"
 )
 
-type (
-	auth        interface{}
-	fileStorage interface {
-		GetData(id gopay.ID) ([]byte, error)
-	}
-)
+type fileStorage interface {
+	GetData(id gopay.ID) ([]byte, error)
+}
 
 type Handler struct {
 	paymentManager *gopay.PaymentManager
-	auth           auth
 	fileStorage    fileStorage
 }
 
-func NewHandler(paymentManager *gopay.PaymentManager, auth auth, fileStorage fileStorage) Handler {
+func NewHandler(paymentManager *gopay.PaymentManager, fileStorage fileStorage) Handler {
 	return Handler{
 		paymentManager: paymentManager,
-		auth:           auth,
 		fileStorage:    fileStorage,
 	}
 }
@@ -37,8 +32,6 @@ type newPaymentRequest struct {
 }
 
 func (h Handler) NewPayment(c echo.Context) error {
-	// TODO: admin auth
-
 	log := slog.Default().With(
 		slog.String("op", "Handler.NewPayment"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
@@ -112,8 +105,6 @@ type checkoutRequest struct {
 }
 
 func (h Handler) Checkout(c echo.Context) error {
-	// TODO: payment service auth
-
 	log := slog.Default().With(
 		slog.String("op", "Handler.Checkout"),
 		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
