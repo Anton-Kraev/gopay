@@ -2,7 +2,7 @@
 .SILENT:
 
 run:
-	go run ./cmd/app/main.go
+	go run ./cmd/api/main.go
 
 mock:
 	go generate -run=mockgen ./...
