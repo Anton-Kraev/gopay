@@ -62,7 +62,6 @@ func (pm *PaymentManager) CreatePayment(id ID, templateName string, user User) (
 	}
 
 	payment.User = user
-	payment.PaymentLink = template.PaymentLink
 	payment.ResourceLink = template.ResourceLink
 
 	if err = pm.storage.Set(id, *payment); err != nil {
