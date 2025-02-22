@@ -100,8 +100,10 @@ func (h Handler) Redirect(c echo.Context) error {
 }
 
 type checkoutRequest struct {
-	ID     gopay.ID     `param:"id" validate:"required,id"`
-	Status gopay.Status `json:"status" validate:"required,status"`
+	ID     gopay.ID `param:"id" validate:"required,id"`
+	Object struct {
+		Status gopay.Status `json:"status" validate:"required,status"`
+	} `json:"object"`
 }
 
 func (h Handler) Checkout(c echo.Context) error {
@@ -123,7 +125,7 @@ func (h Handler) Checkout(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	if err := h.paymentManager.UpdatePaymentStatus(req.ID, req.Status); err != nil {
+	if err := h.paymentManager.UpdatePaymentStatus(req.ID, req.Object.Status); err != nil {
 		log.Error(err.Error())
 
 		return c.String(http.StatusInternalServerError, "update payment status failed")
