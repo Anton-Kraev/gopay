@@ -10,8 +10,6 @@ import (
 )
 
 func (r PaymentRepository) Get(id gopay.ID) (gopay.Payment, error) {
-	const op = "PaymentRepository.Get"
-
 	var pay gopay.Payment
 
 	if err := r.db.View(func(tx *bolt.Tx) error {
@@ -24,15 +22,13 @@ func (r PaymentRepository) Get(id gopay.ID) (gopay.Payment, error) {
 
 		return json.Unmarshal(binPay, &pay)
 	}); err != nil {
-		return gopay.Payment{}, fmt.Errorf("%s: %w", op, err)
+		return gopay.Payment{}, fmt.Errorf("bolt.PaymentRepository.Get: %w", err)
 	}
 
 	return pay, nil
 }
 
 func (r PaymentRepository) Set(id gopay.ID, pay gopay.Payment) error {
-	const op = "PaymentRepository.SetLink"
-
 	if err := r.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(paymentBucket)
 
@@ -43,14 +39,14 @@ func (r PaymentRepository) Set(id gopay.ID, pay gopay.Payment) error {
 
 		return b.Put([]byte(id), binPay)
 	}); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("bolt.PaymentRepository.Set: %w", err)
 	}
 
 	return nil
 }
 
 func (r PaymentRepository) UpdateStatus(id gopay.ID, status gopay.Status) error {
-	const op = "PaymentRepository.UpdateStatus"
+	const op = "bolt.PaymentRepository.UpdateStatus"
 
 	pay, err := r.Get(id)
 	if err != nil {

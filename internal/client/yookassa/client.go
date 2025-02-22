@@ -30,7 +30,7 @@ func NewClient(checkoutURL string, config AuthConfig) Client {
 }
 
 func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gopay.Payment, error) {
-	const op = "Client.CreatePayment"
+	const op = "yookassa.Client.CreatePayment"
 
 	uid := uuid.New().String()
 	payment := &Payment{
