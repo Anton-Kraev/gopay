@@ -44,7 +44,7 @@ func (s Server) InitRoutes() *echo.Echo {
 
 	g.POST("/:id", s.handlers.NewPayment)
 	g.GET("/:id", s.handlers.Redirect)
-	g.POST("/payments/:id", s.handlers.Checkout)
+	g.POST("/payments", s.handlers.Checkout)
 	g.GET("/files/:id", s.handlers.File)
 
 	return e
