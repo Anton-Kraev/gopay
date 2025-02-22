@@ -67,7 +67,7 @@ func main() {
 		Currency:     "RUB",
 		Amount:       1,
 		Description:  "description",
-		ResourceLink: "http://127.0.0.1:8080/file/123",
+		ResourceLink: "http://127.0.0.1:8080/api/files/123",
 	}); err != nil {
 		log.Fatalln(err)
 	}
