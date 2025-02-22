@@ -11,7 +11,7 @@ import (
 
 var (
 	once     sync.Once
-	instance Config
+	instance *Config
 )
 
 type Config struct {
@@ -34,14 +34,16 @@ type Config struct {
 	}
 }
 
-func GetConfig(path string) (Config, error) {
+func GetConfig(path string) (*Config, error) {
 	var err error
 
 	once.Do(func() {
+		instance = &Config{}
+
 		err = errors.Join(
-			cleanenv.ReadConfig(path, &instance),
+			cleanenv.ReadConfig(path, instance),
 			godotenv.Load(),
-			cleanenv.ReadEnv(&instance),
+			cleanenv.ReadEnv(instance),
 		)
 	})
 
