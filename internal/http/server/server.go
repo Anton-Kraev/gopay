@@ -40,10 +40,12 @@ func (s Server) InitRoutes() *echo.Echo {
 	e.Use(middleware.RequestID())
 	e.Use(slogecho.New(s.logger))
 
-	e.POST("/:id", s.handlers.NewPayment)
-	e.GET("/:id", s.handlers.Redirect)
-	e.POST("/payment/:id", s.handlers.Checkout)
-	e.GET("/file/:id", s.handlers.File)
+	g := e.Group("/api")
+
+	g.POST("/:id", s.handlers.NewPayment)
+	g.GET("/:id", s.handlers.Redirect)
+	g.POST("/payments/:id", s.handlers.Checkout)
+	g.GET("/files/:id", s.handlers.File)
 
 	return e
 }
