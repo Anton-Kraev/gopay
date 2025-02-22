@@ -20,7 +20,7 @@ func NewGenerator(baseURL string) Generator {
 func (g Generator) GenerateLink(id gopay.ID) (gopay.Link, error) {
 	link := gopay.Link(fmt.Sprintf("%s/api/%s", g.baseURL, id))
 	if !link.Validate() {
-		return "", errGenerateLink
+		return "", fmt.Errorf("links.Generator.GenerateLink: %w", errGenerateLink)
 	}
 
 	return link, nil
