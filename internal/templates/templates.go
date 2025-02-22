@@ -21,23 +21,25 @@ type Templates struct {
 
 func New(db *bolt.DB) (Templates, error) {
 	if err := createBucket(db); err != nil {
-		return Templates{}, err
+		return Templates{}, fmt.Errorf("templates.New: %w", err)
 	}
 
 	return Templates{db: db}, nil
 }
 
 func createBucket(db *bolt.DB) error {
-	return db.Update(func(tx *bolt.Tx) error {
+	if err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(templateBucket)
 
 		return err
-	})
+	}); err != nil {
+		return fmt.Errorf("templates.createBucket: %w", err)
+	}
+
+	return nil
 }
 
 func (t Templates) GetTemplate(templateName string) (gopay.PaymentTemplate, error) {
-	const op = "Templates.GetTemplate"
-
 	var paymentTemplate gopay.PaymentTemplate
 
 	if err := t.db.View(func(tx *bolt.Tx) error {
@@ -50,15 +52,13 @@ func (t Templates) GetTemplate(templateName string) (gopay.PaymentTemplate, erro
 
 		return json.Unmarshal(binPay, &paymentTemplate)
 	}); err != nil {
-		return gopay.PaymentTemplate{}, fmt.Errorf("%s: %w", op, err)
+		return gopay.PaymentTemplate{}, fmt.Errorf("templates.Templates.GetTemplate: %w", err)
 	}
 
 	return paymentTemplate, nil
 }
 
 func (t Templates) SetTemplate(templateName string, template gopay.PaymentTemplate) error {
-	const op = "Templates.SetTemplate"
-
 	if err := t.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(templateBucket)
 
@@ -69,7 +69,7 @@ func (t Templates) SetTemplate(templateName string, template gopay.PaymentTempla
 
 		return b.Put([]byte(templateName), binTemplate)
 	}); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("templates.Templates.SetTemplate: %w", err)
 	}
 
 	return nil

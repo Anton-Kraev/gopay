@@ -20,17 +20,15 @@ type PaymentRepository struct {
 }
 
 func NewPaymentRepository(db *bolt.DB) (PaymentRepository, error) {
-	const op = "NewPaymentRepository"
-
 	if err := createBuckets(db); err != nil {
-		return PaymentRepository{}, fmt.Errorf("%s: %w", op, err)
+		return PaymentRepository{}, fmt.Errorf("bolt.NewPaymentRepository: %w", err)
 	}
 
 	return PaymentRepository{db: db}, nil
 }
 
 func createBuckets(db *bolt.DB) error {
-	return db.Update(func(tx *bolt.Tx) error {
+	if err := db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists(paymentBucket)
 		if err != nil {
 			return err
@@ -39,5 +37,9 @@ func createBuckets(db *bolt.DB) error {
 		_, err = tx.CreateBucketIfNotExists(linkBucket)
 
 		return err
-	})
+	}); err != nil {
+		return fmt.Errorf("bolt.createBuckets: %w", err)
+	}
+
+	return nil
 }
