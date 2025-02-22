@@ -1,0 +1,4 @@
+.idea
+*.db
+mocks
+.env
