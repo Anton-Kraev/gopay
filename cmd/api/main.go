@@ -8,7 +8,7 @@ import (
 
 	"github.com/Anton-Kraev/gopay"
 	"github.com/Anton-Kraev/gopay/internal/client/yookassa"
-	"github.com/Anton-Kraev/gopay/internal/config"
+	"github.com/Anton-Kraev/gopay/internal/config/api"
 	"github.com/Anton-Kraev/gopay/internal/http/handler"
 	"github.com/Anton-Kraev/gopay/internal/http/server"
 	"github.com/Anton-Kraev/gopay/internal/links"
@@ -24,7 +24,7 @@ const (
 )
 
 func main() {
-	cfg, err := config.GetConfig(configPath)
+	cfg, err := api.GetConfig(configPath)
 	if err != nil {
 		log.Fatalln(err)
 	}
