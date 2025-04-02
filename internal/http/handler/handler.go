@@ -68,6 +68,67 @@ func (h Handler) NewPayment(c echo.Context) error {
 	return c.String(http.StatusOK, string(link))
 }
 
+type paymentStatus struct {
+	ID     gopay.ID     `json:"id"`
+	Status gopay.Status `json:"status"`
+}
+
+type allPaymentResponse struct {
+	Statuses []paymentStatus `json:"statuses"`
+}
+
+func (h Handler) AllPayment(c echo.Context) error {
+	log := slog.Default().With(
+		slog.String("op", "Handler.AllPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
+
+	statuses, err := h.paymentManager.GetAllPaymentsStatuses()
+	if err != nil {
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "get payments statuses failed")
+	}
+
+	log.Info("success get payments statuses")
+
+	var resp allPaymentResponse
+
+	for id, status := range statuses {
+		resp.Statuses = append(resp.Statuses, paymentStatus{
+			ID:     id,
+			Status: status,
+		})
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+func (h Handler) GetPayment(c echo.Context) error {
+	log := slog.Default().With(
+		slog.String("op", "Handler.GetPayment"),
+		slog.String("request_id", c.Response().Header().Get(echo.HeaderXRequestID)),
+	)
+
+	id := gopay.ID(c.Param("id"))
+	if !id.Validate() {
+		log.Error("invalid request: bad id")
+
+		return c.String(http.StatusBadRequest, "invalid request: bad id")
+	}
+
+	status, err := h.paymentManager.GetPaymentStatus(id)
+	if err != nil {
+		log.Error(err.Error())
+
+		return c.String(http.StatusInternalServerError, "get payment status failed")
+	}
+
+	log.Info("success get payment status")
+
+	return c.String(http.StatusOK, string(status))
+}
+
 func (h Handler) Redirect(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.Redirect"),

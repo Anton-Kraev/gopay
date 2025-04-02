@@ -18,6 +18,8 @@ type (
 	paymentStorage interface {
 		Get(id ID) (Payment, error)
 		Set(id ID, pay Payment) error
+		GetStatus(id ID) (Status, error)
+		GetStatuses() (map[ID]Status, error)
 		UpdateStatus(id ID, status Status) error
 		SetLink(id ID, link Link) error
 		GetLink(id ID) (Link, error)
@@ -73,6 +75,14 @@ func (pm *PaymentManager) CreatePayment(id ID, templateName string, user User) (
 	}
 
 	return pm.links.GenerateLink(id)
+}
+
+func (pm *PaymentManager) GetAllPaymentsStatuses() (map[ID]Status, error) {
+	return pm.storage.GetStatuses()
+}
+
+func (pm *PaymentManager) GetPaymentStatus(id ID) (Status, error) {
+	return pm.storage.GetStatus(id)
 }
 
 func (pm *PaymentManager) GetRedirectLink(id ID) (Link, error) {

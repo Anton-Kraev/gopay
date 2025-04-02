@@ -12,6 +12,8 @@ import (
 
 type handlers interface {
 	NewPayment(c echo.Context) error
+	AllPayment(c echo.Context) error
+	GetPayment(c echo.Context) error
 	Redirect(c echo.Context) error
 	Checkout(c echo.Context) error
 	File(c echo.Context) error
@@ -42,9 +44,11 @@ func (s Server) InitRoutes() *echo.Echo {
 
 	g := e.Group("/api")
 
-	g.POST("/:id", s.handlers.NewPayment)
+	g.POST("/payments/:id", s.handlers.NewPayment)
+	g.GET("/payments", s.handlers.AllPayment)
+	g.GET("/payments/:id", s.handlers.GetPayment)
 	g.GET("/:id", s.handlers.Redirect)
-	g.POST("/payments", s.handlers.Checkout)
+	g.POST("/checkout", s.handlers.Checkout)
 	g.GET("/files/:id", s.handlers.File)
 
 	return e
