@@ -14,8 +14,9 @@ var (
 )
 
 type Config struct {
-	Token    string `env:"TG_BOT_TOKEN,required"`
-	AdminIDs string `env:"TG_ADMIN_IDS,required"`
+	Token     string `env:"TG_BOT_TOKEN" env-required:""`
+	AdminIDs  string `env:"TG_ADMIN_IDS" env-required:""`
+	ServerURL string `env:"SERVER_URL" env-required:""`
 }
 
 func GetConfig() (*Config, error) {

@@ -3,26 +3,35 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/mymmrac/telego"
+
+	"github.com/Anton-Kraev/gopay"
 )
 
 type Telegram struct {
-	bot       *telego.Bot
-	fsm       map[int64]string // finite state machine (store user states in format "user_id: state")
-	whitelist []int64          // list of allowed users (gopay admins user ids)
+	adminClient       gopay.AdminClient
+	bot               *telego.Bot
+	fsm               map[int64]state                   // finite state machine (store user states in format "user_id: state")
+	newPaymentService map[int64]gopay.NewPaymentService // service with user data for creating new payments
+	whitelist         []int64                           // list of allowed users (gopay admins user ids)
+	log               *slog.Logger
 }
 
-func New(token string, adminIDs []int64) (*Telegram, error) {
+func New(adminClient gopay.AdminClient, token string, adminIDs []int64, log *slog.Logger) (*Telegram, error) {
 	tgBot, err := telego.NewBot(token)
 	if err != nil {
 		return nil, fmt.Errorf("telegram.New: %w", err)
 	}
 
 	return &Telegram{
-		bot:       tgBot,
-		fsm:       make(map[int64]string),
-		whitelist: adminIDs,
+		adminClient:       adminClient,
+		bot:               tgBot,
+		fsm:               make(map[int64]state),
+		newPaymentService: make(map[int64]gopay.NewPaymentService),
+		whitelist:         adminIDs,
+		log:               log,
 	}, nil
 }
 
@@ -40,11 +49,4 @@ func (t *Telegram) Start(ctx context.Context) error {
 			t.handleUpdate(ctx, update)
 		}
 	}
-}
-
-func (t *Telegram) handleUpdate(ctx context.Context, update telego.Update) {
-	_, _ = t.bot.SendMessage(ctx, &telego.SendMessageParams{
-		ChatID: telego.ChatID{ID: update.Message.Chat.ID},
-		Text:   update.Message.Text,
-	})
 }
