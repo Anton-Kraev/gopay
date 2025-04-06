@@ -26,7 +26,6 @@ func NewHandler(paymentManager *gopay.PaymentManager, fileStorage fileStorage) H
 }
 
 type newPaymentRequest struct {
-	ID       gopay.ID              `param:"id" validate:"required,id"`
 	Template gopay.PaymentTemplate `json:"template" validate:"required"`
 	User     gopay.User            `json:"user" validate:"required"`
 }
@@ -50,17 +49,11 @@ func (h Handler) NewPayment(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	link, err := h.paymentManager.CreatePayment(req.ID, req.Template, req.User)
+	link, err := h.paymentManager.CreatePayment(req.Template, req.User)
 	if err != nil {
 		log.Error(err.Error())
 
 		return c.String(http.StatusInternalServerError, "create payment failed")
-	}
-
-	if !link.Validate() {
-		log.Error("created link is invalid")
-
-		return c.String(http.StatusInternalServerError, "created link is invalid")
 	}
 
 	log.Info("success payment created")
@@ -149,12 +142,6 @@ func (h Handler) Redirect(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "get redirect link failed")
 	}
 
-	if !link.Validate() {
-		log.Error("redirect link is invalid")
-
-		return c.String(http.StatusInternalServerError, "redirect link is invalid")
-	}
-
 	log.Info("success get redirect link")
 
 	return c.Redirect(http.StatusTemporaryRedirect, string(link))
@@ -206,11 +193,6 @@ func (h Handler) File(c echo.Context) error {
 	)
 
 	id := gopay.ID(c.Param("id"))
-	if !id.Validate() {
-		log.Error("invalid request: bad id")
-
-		return c.String(http.StatusBadRequest, "invalid request: bad id")
-	}
 
 	data, err := h.fileStorage.GetData(id)
 	if err != nil {

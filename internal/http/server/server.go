@@ -44,7 +44,7 @@ func (s Server) InitRoutes() *echo.Echo {
 
 	g := e.Group("/api")
 
-	g.POST("/payments/:id", s.handlers.NewPayment)
+	g.POST("/payments", s.handlers.NewPayment)
 	g.GET("/payments", s.handlers.AllPayment)
 	g.GET("/payments/:id", s.handlers.GetPayment)
 	g.GET("/:id", s.handlers.Redirect)

@@ -88,7 +88,7 @@ func (i *newPaymentServiceImpl) Do() (Link, error) {
 	}
 
 	// TODO: generate id more correctly and fix request body
-	resp, err := i.api.R().SetBody(&req).Post("/payments/123")
+	resp, err := i.api.R().SetBody(&req).Post("/payments")
 	if err != nil {
 		return "", fmt.Errorf("AdminClient.NewPayment: %w", err)
 	}
