@@ -8,7 +8,7 @@ var ErrCreatePayment = errors.New("create payment failed")
 
 type (
 	linkGenerator interface {
-		GenerateLink(id ID) (Link, error)
+		GenerateLink() (ID, Link, error)
 	}
 
 	paymentStorage interface {
@@ -42,7 +42,12 @@ func NewPaymentManager(
 	}
 }
 
-func (pm *PaymentManager) CreatePayment(id ID, template PaymentTemplate, user User) (Link, error) {
+func (pm *PaymentManager) CreatePayment(template PaymentTemplate, user User) (Link, error) {
+	id, link, err := pm.links.GenerateLink()
+	if err != nil {
+		return "", err
+	}
+
 	payment, err := pm.payments.CreatePayment(id, template)
 	if err != nil {
 		return "", err
@@ -63,7 +68,7 @@ func (pm *PaymentManager) CreatePayment(id ID, template PaymentTemplate, user Us
 		return "", err
 	}
 
-	return pm.links.GenerateLink(id)
+	return link, nil
 }
 
 func (pm *PaymentManager) GetAllPaymentsStatuses() (map[ID]Status, error) {
