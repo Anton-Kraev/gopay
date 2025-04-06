@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/Anton-Kraev/gopay"
 	"github.com/Anton-Kraev/gopay/internal/config/bot"
+	"github.com/Anton-Kraev/gopay/internal/logger"
 	"github.com/Anton-Kraev/gopay/internal/telegram"
 	"github.com/Anton-Kraev/gopay/internal/typeconv"
 )
@@ -27,7 +29,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	tg, err := telegram.New(cfg.Token, adminIDs)
+	adminClient := gopay.NewAdminClient(cfg.ServerURL)
+
+	tg, err := telegram.New(adminClient, cfg.Token, adminIDs, logger.Setup("local"))
 	if err != nil {
 		log.Fatalln(err)
 	}
