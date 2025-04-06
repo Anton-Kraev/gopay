@@ -13,21 +13,19 @@ import (
 )
 
 type mockFields struct {
-	mockTemplates *mocks.Mocktemplates
-	mockLinks     *mocks.MocklinkGenerator
-	mockStorage   *mocks.MockpaymentStorage
-	mockPayments  *mocks.MockpaymentService
+	mockLinks    *mocks.MocklinkGenerator
+	mockStorage  *mocks.MockpaymentStorage
+	mockPayments *mocks.MockpaymentService
 }
 
 func setupMocks(ctrl *gomock.Controller) (mockFields, *gopay.PaymentManager) {
 	mf := mockFields{
-		mockTemplates: mocks.NewMocktemplates(ctrl),
-		mockLinks:     mocks.NewMocklinkGenerator(ctrl),
-		mockStorage:   mocks.NewMockpaymentStorage(ctrl),
-		mockPayments:  mocks.NewMockpaymentService(ctrl),
+		mockLinks:    mocks.NewMocklinkGenerator(ctrl),
+		mockStorage:  mocks.NewMockpaymentStorage(ctrl),
+		mockPayments: mocks.NewMockpaymentService(ctrl),
 	}
 
-	pm := gopay.NewPaymentManager(mf.mockTemplates, mf.mockLinks, mf.mockStorage, mf.mockPayments)
+	pm := gopay.NewPaymentManager(mf.mockLinks, mf.mockStorage, mf.mockPayments)
 
 	return mf, pm
 }
@@ -38,7 +36,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 	type (
 		args struct {
 			id       gopay.ID
-			template string
+			template gopay.PaymentTemplate
 			user     gopay.User
 		}
 
@@ -55,28 +53,11 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		expected   expected
 	}{
 		{
-			name: "error getting template",
-			args: args{
-				template: "payment_template",
-			},
-			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, errors.New("template not found")).Times(1)
-			},
-			expected: expected{
-				link: gopay.Link(""),
-				err:  errors.New("template not found"),
-			},
-		},
-		{
 			name: "error create payment",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
 					Return(nil, errors.New("error create payment")).Times(1)
 			},
@@ -88,12 +69,9 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error empty payment",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
 					Return(nil, nil).Times(1)
 			},
@@ -105,12 +83,9 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error set payment",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
 					Return(&gopay.Payment{}, nil).Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
@@ -124,12 +99,9 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error set link",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
 					Return(&gopay.Payment{PaymentLink: "payment"}, nil).Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
@@ -145,12 +117,9 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "error generate link",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{}, nil).Times(1)
 				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{}).
 					Return(&gopay.Payment{User: gopay.User{ID: "1"}}, nil).Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).
@@ -168,8 +137,13 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				id:       gopay.ID("1"),
-				template: "payment_template",
+				id: gopay.ID("1"),
+				template: gopay.PaymentTemplate{
+					Currency:     "RUB",
+					Amount:       100,
+					Description:  "description",
+					ResourceLink: "resource",
+				},
 				user: gopay.User{
 					ID:    "1",
 					Name:  "name",
@@ -177,9 +151,12 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 				},
 			},
 			setupMocks: func(f mockFields) {
-				f.mockTemplates.EXPECT().GetTemplate("payment_template").
-					Return(gopay.PaymentTemplate{ResourceLink: "resource"}, nil).Times(1)
-				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{ResourceLink: "resource"}).
+				f.mockPayments.EXPECT().CreatePayment(gopay.ID("1"), gopay.PaymentTemplate{
+					Currency:     "RUB",
+					Amount:       100,
+					Description:  "description",
+					ResourceLink: "resource",
+				}).
 					Return(&gopay.Payment{Amount: 100, Status: gopay.StatusPending, PaymentLink: "payment"}, nil).
 					Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("1"), gomock.Any()).

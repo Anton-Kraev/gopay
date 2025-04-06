@@ -67,19 +67,28 @@ func (i *newPaymentServiceImpl) Description(description string) NewPaymentServic
 	return i
 }
 
+type newPaymentRequest struct {
+	Template PaymentTemplate `json:"template"`
+	User     User            `json:"user"`
+}
+
 func (i *newPaymentServiceImpl) Do() (Link, error) {
-	req := struct {
-		currency    string
-		amount      uint
-		description string
-	}{
-		currency:    i.currency,
-		amount:      i.amount,
-		description: i.description,
+	req := newPaymentRequest{
+		Template: PaymentTemplate{
+			Currency:     i.currency,
+			Amount:       i.amount,
+			Description:  i.description,
+			ResourceLink: Link("http://127.0.0.1:8080/api/files/123"),
+		},
+		User: User{
+			ID:    "id",
+			Name:  "name",
+			Email: "email@mail.com",
+		},
 	}
 
 	// TODO: generate id more correctly and fix request body
-	resp, err := i.api.R().SetBody(req).Post("/payments/123")
+	resp, err := i.api.R().SetBody(&req).Post("/payments/123")
 	if err != nil {
 		return "", fmt.Errorf("AdminClient.NewPayment: %w", err)
 	}
