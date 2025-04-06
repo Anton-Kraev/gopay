@@ -26,9 +26,9 @@ func NewHandler(paymentManager *gopay.PaymentManager, fileStorage fileStorage) H
 }
 
 type newPaymentRequest struct {
-	ID       gopay.ID   `param:"id" validate:"required,id"`
-	Template string     `json:"template" validate:"required"`
-	User     gopay.User `json:"user"`
+	ID       gopay.ID              `param:"id" validate:"required,id"`
+	Template gopay.PaymentTemplate `json:"template" validate:"required"`
+	User     gopay.User            `json:"user" validate:"required"`
 }
 
 func (h Handler) NewPayment(c echo.Context) error {
