@@ -61,7 +61,12 @@ func (r PaymentRepository) GetStatuses() (map[gopay.ID]gopay.Status, error) {
 		b := tx.Bucket(paymentBucket)
 
 		return b.ForEach(func(k, v []byte) error {
-			statuses[gopay.ID(k)] = gopay.Status(v)
+			var pay gopay.Payment
+			if err := json.Unmarshal(v, &pay); err != nil {
+				return err
+			}
+
+			statuses[gopay.ID(k)] = pay.Status
 
 			return nil
 		})
