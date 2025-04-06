@@ -37,7 +37,9 @@ type NewPaymentService interface {
 	Currency(currency string) NewPaymentService
 	Amount(amount uint) NewPaymentService
 	Description(description string) NewPaymentService
-	Do() error
+	Do() (Link, error)
+
+	String() string
 }
 
 type newPaymentServiceImpl struct {
@@ -65,7 +67,7 @@ func (i *newPaymentServiceImpl) Description(description string) NewPaymentServic
 	return i
 }
 
-func (i *newPaymentServiceImpl) Do() error {
+func (i *newPaymentServiceImpl) Do() (Link, error) {
 	req := struct {
 		currency    string
 		amount      uint
@@ -79,14 +81,18 @@ func (i *newPaymentServiceImpl) Do() error {
 	// TODO: generate id more correctly and fix request body
 	resp, err := i.api.R().SetBody(req).Post("/payments/123")
 	if err != nil {
-		return fmt.Errorf("AdminClient.NewPayment: %w", err)
+		return "", fmt.Errorf("AdminClient.NewPayment: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("AdminClient.NewPayment: error response from API %s", resp.String())
+		return "", fmt.Errorf("AdminClient.NewPayment: error response from API %s", resp.String())
 	}
 
-	return nil
+	return Link(resp.String()), nil
+}
+
+func (i *newPaymentServiceImpl) String() string {
+	return fmt.Sprintf("сумма: %d\nвалюта: %s\nописание: %s", i.amount, i.currency, i.description)
 }
 
 type AllPaymentService interface {
@@ -140,9 +146,7 @@ func (i *getPaymentServiceImpl) ID(id ID) GetPaymentService {
 }
 
 func (i *getPaymentServiceImpl) Do() (Status, error) {
-	var status Status
-
-	resp, err := i.api.R().SetResult(&status).Get("/payments/" + string(i.id))
+	resp, err := i.api.R().Get("/payments/" + string(i.id))
 	if err != nil {
 		return "", fmt.Errorf("AdminClient.GetPayment: %w", err)
 	}
@@ -151,5 +155,5 @@ func (i *getPaymentServiceImpl) Do() (Status, error) {
 		return "", fmt.Errorf("AdminClient.GetPayment: error response from API %s", resp.String())
 	}
 
-	return status, nil
+	return Status(resp.String()), nil
 }
