@@ -32,8 +32,7 @@ func NewClient(checkoutURL string, config AuthConfig) Client {
 func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gopay.Payment, error) {
 	const op = "yookassa.Client.CreatePayment"
 
-	uid := uuid.New().String()
-	payment := &Payment{
+	yookassaPayment := &Payment{
 		Amount: Amount{
 			Value:    fmt.Sprintf("%d", template.Amount),
 			Currency: template.Currency,
@@ -50,9 +49,9 @@ func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gop
 	}
 
 	resp, err := c.http.R().
-		SetBody(payment).
-		SetResult(payment).
-		SetHeader("Idempotence-Key", uid).
+		SetBody(yookassaPayment).
+		SetResult(yookassaPayment).
+		SetHeader("Idempotence-Key", uuid.New().String()).
 		Post(createPaymentEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -62,13 +61,23 @@ func (c Client) CreatePayment(id gopay.ID, template gopay.PaymentTemplate) (*gop
 		return nil, fmt.Errorf("%s: error response from API %s", op, resp.String())
 	}
 
-	if payment.ID == "" {
+	payment := &gopay.Payment{
+		Amount:      template.Amount,
+		Status:      gopay.Status(yookassaPayment.Status),
+		PaymentLink: gopay.Link(yookassaPayment.Confirmation.ConfirmationURL),
+	}
+
+	if yookassaPayment.ID == "" {
 		return nil, fmt.Errorf("%s: empty payment ID", op)
 	}
 
-	return &gopay.Payment{
-		Amount:      template.Amount,
-		Status:      gopay.Status(payment.Status),
-		PaymentLink: gopay.Link(payment.Confirmation.ConfirmationURL),
-	}, nil
+	if !payment.Status.Validate() {
+		return nil, fmt.Errorf("%s: unknown payment status", op)
+	}
+
+	if !payment.PaymentLink.Validate() {
+		return nil, fmt.Errorf("%s: bad payment url", op)
+	}
+
+	return payment, nil
 }

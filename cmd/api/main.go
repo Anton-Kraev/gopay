@@ -73,7 +73,6 @@ func main() {
 	}
 
 	pm := gopay.NewPaymentManager(
-		templateStorage,
 		linkGenerator,
 		paymentStorage,
 		paymentService,

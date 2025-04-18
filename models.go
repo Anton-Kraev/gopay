@@ -3,12 +3,14 @@ package gopay
 import (
 	"net/url"
 	"slices"
+
+	"github.com/google/uuid"
 )
 
 type ID string
 
 func (id ID) Validate() bool {
-	return id != ""
+	return uuid.Validate(string(id)) == nil
 }
 
 type Status string
@@ -30,7 +32,7 @@ func (s Status) Validate() bool {
 }
 
 type User struct {
-	ID    ID     `json:"id" validate:"required,id"`
+	ID    ID     `json:"id" validate:"required"`
 	Name  string `json:"name" validate:"required"`
 	Email string `json:"email" validate:"required,email"`
 }
@@ -52,8 +54,8 @@ type Payment struct {
 }
 
 type PaymentTemplate struct {
-	Currency     string `json:"currency"`
-	Amount       uint   `json:"amount"`
-	Description  string `json:"description"`
-	ResourceLink Link   `json:"resource_link"`
+	Currency     string `json:"currency" validate:"required"`
+	Amount       uint   `json:"amount" validate:"required"`
+	Description  string `json:"description" validate:"required"`
+	ResourceLink Link   `json:"resource_link" validate:"required,url"`
 }

@@ -45,6 +45,38 @@ func (r PaymentRepository) Set(id gopay.ID, pay gopay.Payment) error {
 	return nil
 }
 
+func (r PaymentRepository) GetStatus(id gopay.ID) (gopay.Status, error) {
+	pay, err := r.Get(id)
+	if err != nil {
+		return "", fmt.Errorf("bolt.PaymentRepository.GetStatus: %w", err)
+	}
+
+	return pay.Status, nil
+}
+
+func (r PaymentRepository) GetStatuses() (map[gopay.ID]gopay.Status, error) {
+	statuses := make(map[gopay.ID]gopay.Status)
+
+	if err := r.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(paymentBucket)
+
+		return b.ForEach(func(k, v []byte) error {
+			var pay gopay.Payment
+			if err := json.Unmarshal(v, &pay); err != nil {
+				return err
+			}
+
+			statuses[gopay.ID(k)] = pay.Status
+
+			return nil
+		})
+	}); err != nil {
+		return nil, fmt.Errorf("bolt.PaymentRepository.GetStatuses: %w", err)
+	}
+
+	return statuses, nil
+}
+
 func (r PaymentRepository) UpdateStatus(id gopay.ID, status gopay.Status) error {
 	const op = "bolt.PaymentRepository.UpdateStatus"
 
