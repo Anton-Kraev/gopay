@@ -17,21 +17,24 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	cfg, err := bot.GetConfig()
+	cfg, err := bot.LoadConfig(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	log.Println(cfg)
 
-	adminIDs, err := typeconv.StringToInt64Slice(cfg.AdminIDs)
+	adminIDs, err := typeconv.StringToInt64Slice(cfg.TGAdminIDs)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	adminClient := gopay.NewAdminClient(cfg.ServerURL)
+	adminClient := gopay.NewAdminClient(cfg.GopayServerURL)
 
-	tg, err := telegram.New(adminClient, cfg.Token, adminIDs, logger.Setup("local"))
+	tg, err := telegram.New(telegram.Config{
+		BotToken: cfg.TGBotToken,
+		AdminIDs: adminIDs,
+	}, adminClient, logger.Setup("local"))
 	if err != nil {
 		log.Fatalln(err)
 	}

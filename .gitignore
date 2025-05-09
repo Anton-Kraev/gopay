@@ -2,3 +2,4 @@
 *.db
 mocks
 .env
+bin

@@ -19,8 +19,8 @@ type Telegram struct {
 	log               *slog.Logger
 }
 
-func New(adminClient gopay.AdminClient, token string, adminIDs []int64, log *slog.Logger) (*Telegram, error) {
-	tgBot, err := telego.NewBot(token)
+func New(config Config, adminClient gopay.AdminClient, log *slog.Logger) (*Telegram, error) {
+	tgBot, err := telego.NewBot(config.BotToken)
 	if err != nil {
 		return nil, fmt.Errorf("telegram.New: %w", err)
 	}
@@ -30,7 +30,7 @@ func New(adminClient gopay.AdminClient, token string, adminIDs []int64, log *slo
 		bot:               tgBot,
 		fsm:               make(map[int64]state),
 		newPaymentService: make(map[int64]gopay.NewPaymentService),
-		whitelist:         adminIDs,
+		whitelist:         config.AdminIDs,
 		log:               log,
 	}, nil
 }
