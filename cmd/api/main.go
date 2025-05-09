@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	bolt "go.etcd.io/bbolt"
 
@@ -14,17 +17,15 @@ import (
 	"github.com/Anton-Kraev/gopay/internal/links"
 	"github.com/Anton-Kraev/gopay/internal/logger"
 	repo "github.com/Anton-Kraev/gopay/internal/repository/bolt"
-	"github.com/Anton-Kraev/gopay/internal/templates"
 	"github.com/Anton-Kraev/gopay/internal/validator"
 	"github.com/Anton-Kraev/gopay/mock"
 )
 
-const (
-	configPath = "./configs/api.yaml"
-)
-
 func main() {
-	cfg, err := api.GetConfig(configPath)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	cfg, err := api.LoadConfig(ctx)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -32,9 +33,9 @@ func main() {
 	log.Println(cfg)
 
 	db, err := bolt.Open(
-		cfg.DB.FilePath,
+		cfg.DBFilePath,
 		0600,
-		&bolt.Options{Timeout: cfg.DB.OpenTimeout},
+		&bolt.Options{Timeout: cfg.DBOpenTimeout},
 	)
 	if err != nil {
 		log.Fatalln(err)
@@ -51,26 +52,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	paymentService := yookassa.NewClient(cfg.Yookassa.CheckoutURL, yookassa.AuthConfig{
-		ID:    cfg.Yookassa.ShopID,
-		Token: cfg.Yookassa.APIToken,
+	paymentService := yookassa.NewClient(yookassa.Config{
+		CheckoutURL: cfg.YookassaCheckoutURL,
+		ShopID:      cfg.YookassaShopID,
+		APIToken:    cfg.YookassaAPIToken,
 	})
 
-	linkGenerator := links.NewGenerator(fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port))
-
-	templateStorage, err := templates.New(db)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	if err = templateStorage.SetTemplate("template", gopay.PaymentTemplate{
-		Currency:     "RUB",
-		Amount:       1,
-		Description:  "description",
-		ResourceLink: "http://127.0.0.1:8080/api/files/123",
-	}); err != nil {
-		log.Fatalln(err)
-	}
+	linkGenerator := links.NewGenerator(fmt.Sprintf("%s:%s", cfg.GopayHost, cfg.GopayPort))
 
 	pm := gopay.NewPaymentManager(
 		linkGenerator,
@@ -90,5 +78,5 @@ func main() {
 	srv := server.NewServer(hndl, logger.Setup(cfg.Env), val)
 
 	echoSrv := srv.InitRoutes()
-	echoSrv.Logger.Fatal(echoSrv.Start(":" + cfg.Server.Port))
+	echoSrv.Logger.Fatal(echoSrv.Start(":" + cfg.GopayPort))
 }

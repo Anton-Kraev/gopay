@@ -1,51 +1,94 @@
 package api
 
 import (
-	"errors"
-	"sync"
+	"context"
+	"fmt"
+	"os"
 	"time"
 
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
-)
-
-var (
-	once     sync.Once
-	instance *Config
+	"github.com/urfave/cli/v3"
 )
 
 type Config struct {
-	Env string `yaml:"env"`
-
-	Server struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
-	} `yaml:"server"`
-
-	DB struct {
-		FilePath    string        `yaml:"file_path"`
-		OpenTimeout time.Duration `yaml:"open_timeout"`
-	} `yaml:"db"`
-
-	Yookassa struct {
-		CheckoutURL string `env:"YOOKASSA_CHECKOUT_URL"`
-		ShopID      string `env:"YOOKASSA_SHOP_ID"`
-		APIToken    string `env:"YOOKASSA_API_TOKEN"`
-	}
+	Env                 string
+	GopayHost           string
+	GopayPort           string
+	DBFilePath          string
+	DBOpenTimeout       time.Duration
+	YookassaCheckoutURL string
+	YookassaShopID      string
+	YookassaAPIToken    string
 }
 
-func GetConfig(path string) (*Config, error) {
-	var err error
+func LoadConfig(ctx context.Context) (Config, error) {
+	cmd := &cli.Command{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "env",
+				Usage:   "Environment type (local/dev/prod)",
+				Value:   "dev",
+				Sources: cli.EnvVars("ENV"),
+			},
+			&cli.StringFlag{
+				Name:    "gopay-host",
+				Usage:   "GoPay server host",
+				Value:   "localhost",
+				Sources: cli.EnvVars("GOPAY_HOST"),
+			},
+			&cli.StringFlag{
+				Name:    "gopay-port",
+				Aliases: []string{"p"},
+				Usage:   "GoPay server port",
+				Value:   "8080",
+				Sources: cli.EnvVars("GOPAY_PORT"),
+			},
+			&cli.StringFlag{
+				Name:    "db-file-path",
+				Usage:   "Database file path",
+				Value:   "data.db",
+				Sources: cli.EnvVars("DB_FILE"),
+			},
+			&cli.DurationFlag{
+				Name:    "db-open-timeout",
+				Usage:   "Database open timeout",
+				Value:   10 * time.Second,
+				Sources: cli.EnvVars("DB_OPEN_TIMEOUT"),
+			},
+			&cli.StringFlag{
+				Name:     "yookassa-checkout-url",
+				Usage:    "Yookassa checkout URL",
+				Required: true,
+				Sources:  cli.EnvVars("YOOKASSA_CHECKOUT_URL"),
+			},
+			&cli.StringFlag{
+				Name:     "yookassa-shop-id",
+				Usage:    "Yookassa Shop ID",
+				Required: true,
+				Sources:  cli.EnvVars("YOOKASSA_SHOP_ID"),
+			},
+			&cli.StringFlag{
+				Name:     "yookassa-api-token",
+				Usage:    "Yookassa API token",
+				Required: true,
+				Sources:  cli.EnvVars("YOOKASSA_API_TOKEN"),
+			},
+		},
+	}
 
-	once.Do(func() {
-		instance = &Config{}
+	if err := cmd.Run(ctx, os.Args); err != nil {
+		return Config{}, fmt.Errorf("api.LoadConfig: %w", err)
+	}
 
-		err = errors.Join(
-			cleanenv.ReadConfig(path, instance),
-			godotenv.Load(),
-			cleanenv.ReadEnv(instance),
-		)
-	})
+	cfg := Config{
+		Env:                 cmd.String("env"),
+		GopayHost:           cmd.String("gopay-host"),
+		GopayPort:           cmd.String("gopay-port"),
+		DBFilePath:          cmd.String("db-file-path"),
+		DBOpenTimeout:       cmd.Duration("db-open-timeout"),
+		YookassaCheckoutURL: cmd.String("yookassa-checkout-url"),
+		YookassaShopID:      cmd.String("yookassa-shop-id"),
+		YookassaAPIToken:    cmd.String("yookassa-api-token"),
+	}
 
-	return instance, err
+	return cfg, nil
 }

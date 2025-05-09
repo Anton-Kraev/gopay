@@ -1,9 +1,0 @@
-env: local
-
-server:
-  host: localhost
-  port: 8080
-
-db:
-  file_path: test.db
-  open_timeout: 3s
