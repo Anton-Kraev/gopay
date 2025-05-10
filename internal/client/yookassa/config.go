@@ -1,6 +1,7 @@
 package yookassa
 
-type AuthConfig struct {
-	ID    string
-	Token string
+type Config struct {
+	CheckoutURL string
+	ShopID      string
+	APIToken    string
 }

@@ -1,35 +1,52 @@
 package bot
 
 import (
-	"errors"
-	"sync"
+	"context"
+	"fmt"
+	"os"
 
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
-)
-
-var (
-	once     sync.Once
-	instance *Config
+	"github.com/urfave/cli/v3"
 )
 
 type Config struct {
-	Token     string `env:"TG_BOT_TOKEN" env-required:""`
-	AdminIDs  string `env:"TG_ADMIN_IDS" env-required:""`
-	ServerURL string `env:"SERVER_URL" env-required:""`
+	GopayServerURL string
+	TGBotToken     string
+	TGAdminIDs     string
 }
 
-func GetConfig() (*Config, error) {
-	var err error
+func LoadConfig(ctx context.Context) (Config, error) {
+	cmd := &cli.Command{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "gopay-server-url",
+				Usage:   "GoPay server url",
+				Value:   "http://127.0.0.1:8080",
+				Sources: cli.EnvVars("GOPAY_SERVER_URL"),
+			},
+			&cli.StringFlag{
+				Name:     "tg-bot-token",
+				Usage:    "Token for Telegram bot API",
+				Required: true,
+				Sources:  cli.EnvVars("TG_BOT_TOKEN"),
+			},
+			&cli.StringFlag{
+				Name:     "tg-admin-ids",
+				Usage:    "Admins Telegram identifiers in format <id1>,<id2>,<id3>",
+				Required: true,
+				Sources:  cli.EnvVars("TG_ADMIN_IDS"),
+			},
+		},
+	}
 
-	once.Do(func() {
-		instance = &Config{}
+	if err := cmd.Run(ctx, os.Args); err != nil {
+		return Config{}, fmt.Errorf("bot.LoadConfig: %w", err)
+	}
 
-		err = errors.Join(
-			godotenv.Load(),
-			cleanenv.ReadEnv(instance),
-		)
-	})
+	cfg := Config{
+		GopayServerURL: cmd.String("gopay-server-url"),
+		TGBotToken:     cmd.String("tg-bot-token"),
+		TGAdminIDs:     cmd.String("tg-admin-ids"),
+	}
 
-	return instance, err
+	return cfg, nil
 }

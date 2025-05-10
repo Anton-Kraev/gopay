@@ -20,12 +20,12 @@ type Client struct {
 	http        *resty.Client
 }
 
-func NewClient(checkoutURL string, config AuthConfig) Client {
+func NewClient(config Config) Client {
 	return Client{
-		checkoutURL: checkoutURL,
+		checkoutURL: config.CheckoutURL,
 		http: resty.New().
 			SetBaseURL(baseURL).
-			SetBasicAuth(config.ID, config.Token),
+			SetBasicAuth(config.ShopID, config.APIToken),
 	}
 }
 
