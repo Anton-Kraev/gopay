@@ -193,6 +193,11 @@ func (h Handler) File(c echo.Context) error {
 	)
 
 	id := gopay.ID(c.Param("id"))
+	if !id.Validate() {
+		log.Error("invalid request: bad id")
+
+		return c.String(http.StatusBadRequest, "invalid request: bad id")
+	}
 
 	data, err := h.fileStorage.GetData(id)
 	if err != nil {

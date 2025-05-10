@@ -3,6 +3,7 @@ package gopay
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -13,8 +14,15 @@ type AdminClient interface {
 	NewGetPaymentService() GetPaymentService
 }
 
-func NewAdminClient(serverURL string) AdminClient {
-	return &adminClientImpl{api: resty.New().SetBaseURL(serverURL + "/api")}
+func NewAdminClient(serverURL string) (AdminClient, error) {
+	baseURL, err := url.ParseRequestURI(serverURL)
+	if err != nil {
+		return nil, fmt.Errorf("gopay.NewAdminClient: %w", err)
+	}
+
+	apiURL := baseURL.JoinPath("api").String()
+
+	return &adminClientImpl{api: resty.New().SetBaseURL(apiURL)}, nil
 }
 
 type adminClientImpl struct {
@@ -155,7 +163,11 @@ func (i *getPaymentServiceImpl) ID(id ID) GetPaymentService {
 }
 
 func (i *getPaymentServiceImpl) Do() (Status, error) {
-	resp, err := i.api.R().Get("/payments/" + string(i.id))
+	if !i.id.Validate() {
+		return "", fmt.Errorf("AdminClient.GetPayment: invalid id %s", i.id)
+	}
+
+	resp, err := i.api.R().Get(fmt.Sprintf("/payments/%s", i.id))
 	if err != nil {
 		return "", fmt.Errorf("AdminClient.GetPayment: %w", err)
 	}
