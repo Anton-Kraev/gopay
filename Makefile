@@ -1,4 +1,11 @@
+MOCKGEN := go run go.uber.org/mock/mockgen@v0.5.2
+GO_TEST_FLAGS ?=
+PACKAGES ?= ./...
+
 TARGET := ./bin
+
+
+.PHONY: mock
 
 build-api:
 	go build -o $(TARGET)/api ./cmd/api/main.go
@@ -24,7 +31,8 @@ run-bot: build-bot
 		$(if $(TG_ADMIN_IDS),--tg-admin-ids=$(TG_ADMIN_IDS))
 
 mock:
-	go generate -run=mockgen ./...
+	$(MOCKGEN) -version || go install go.uber.org/mock/mockgen@v0.5.2
+	go generate -run=mockgen $(PACKAGES)
 
-test:
-	go test .
+test: mock
+	go test $(GO_TEST_FLAGS) $(PACKAGES)

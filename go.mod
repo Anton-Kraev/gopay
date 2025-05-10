@@ -7,7 +7,6 @@ toolchain go1.23.8
 require (
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/go-resty/resty/v2 v2.16.2
-	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/mymmrac/telego v1.0.2
@@ -15,6 +14,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v3 v3.3.2
 	go.etcd.io/bbolt v1.3.11
+	go.uber.org/mock v0.5.2
 )
 
 require (
