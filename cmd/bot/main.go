@@ -29,7 +29,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	adminClient := gopay.NewAdminClient(cfg.GopayServerURL)
+	adminClient, err := gopay.NewAdminClient(cfg.GopayServerURL)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	tg, err := telegram.New(telegram.Config{
 		BotToken: cfg.TGBotToken,
