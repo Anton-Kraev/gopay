@@ -1,5 +1,6 @@
 # Tooling
-MOCKGEN := go run go.uber.org/mock/mockgen@v0.5.2
+MOCKGEN := go.uber.org/mock/mockgen@v0.5.2
+SWAG := github.com/swaggo/swag/cmd/swag@v1.16.4
 
 # Build configuration
 GOOS ?= $(shell go env GOOS)
@@ -25,10 +26,10 @@ BOT_FLAGS := $(if $(GOPAY_SERVER_URL),--gopay-server-url=$(GOPAY_SERVER_URL)) \
 			 $(if $(TG_BOT_TOKEN),--tg-bot-token=$(TG_BOT_TOKEN)) \
 			 $(if $(TG_ADMIN_IDS),--tg-admin-ids=$(TG_ADMIN_IDS))
 
-.PHONY: build-api run-api build-bot run-bot mock test clean help
+.PHONY: build-api run-api build-bot run-bot docs mock test clean help
 
 ## build-api: Build the GoPay API
-build-api:
+build-api: docs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(TARGET)/api ./cmd/api/main.go
 
 ## run-api: Build and run the GoPay API
@@ -43,18 +44,23 @@ build-bot:
 run-bot: build-bot
 	$(TARGET)/bot $(BOT_FLAGS)
 
+## docs: Generate Swagger documentation for the GoPay API
+docs:
+	go run $(SWAG) -v || go install $(SWAG)
+	go run $(SWAG) init -g internal/http/server/server.go -o ./docs
+
 ## mock: Generate mock files
 mock:
-	$(MOCKGEN) -version || go install go.uber.org/mock/mockgen@v0.5.2
-	go generate -run=mockgen $(PACKAGES)
+	go run $(MOCKGEN) -version || go install $(MOCKGEN)
+	go run $(MOCKGEN) -package=mocks -source=./gopay.go -destination=./mocks/gopay_mocks.go
 
 ## test: Run unit tests
-test: mock
+test: docs mock
 	go test $(GO_TEST_FLAGS) $(PACKAGES)
 
 ## clean: Remove build and test artifacts
 clean:
-	rm -rf $(TARGET) mocks
+	rm -rf $(TARGET) mocks docs
 	go clean -cache -testcache
 
 ## help: Display this help message

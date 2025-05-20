@@ -1,5 +1,6 @@
 .idea
 *.db
 mocks
+docs
 .env
 bin
