@@ -30,6 +30,17 @@ type newPaymentRequest struct {
 	User     gopay.User            `json:"user" validate:"required"`
 }
 
+// NewPayment creates a new payment
+// @Summary Create a new payment
+// @Description Create a new payment and get payment link
+// @Tags payments
+// @Accept json
+// @Produce plain
+// @Param request body newPaymentRequest true "Payment creation request"
+// @Success 200 {string} string "Payment link"
+// @Failure 400 {string} string "Invalid request"
+// @Failure 500 {string} string "Internal server error"
+// @Router /payments [post]
 func (h Handler) NewPayment(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.NewPayment"),
@@ -70,6 +81,14 @@ type allPaymentResponse struct {
 	Statuses []paymentStatus `json:"statuses"`
 }
 
+// AllPayment gets all payment statuses
+// @Summary Get all payment statuses
+// @Description Get statuses for all payments
+// @Tags payments
+// @Produce json
+// @Success 200 {object} allPaymentResponse
+// @Failure 500 {string} string "Internal server error"
+// @Router /payments [get]
 func (h Handler) AllPayment(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.AllPayment"),
@@ -97,6 +116,16 @@ func (h Handler) AllPayment(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
+// GetPayment gets payment status by ID
+// @Summary Get payment status by ID
+// @Description Get status for specific payment
+// @Tags payments
+// @Produce plain
+// @Param id path string true "Payment ID"
+// @Success 200 {string} string "Payment status"
+// @Failure 400 {string} string "Invalid ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /payments/{id} [get]
 func (h Handler) GetPayment(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.GetPayment"),
@@ -122,6 +151,16 @@ func (h Handler) GetPayment(c echo.Context) error {
 	return c.String(http.StatusOK, string(status))
 }
 
+// Redirect redirects to payment/delivery page
+// @Summary Redirect to payment/delivery page
+// @Description Redirect to payment page or delivery page depends on payment status by payment ID
+// @Description NOTE: Swagger UI does not support redirection to external resources like payment page
+// @Tags payments, files
+// @Param id path string true "Payment ID"
+// @Success 307 "Redirect to payment/delivery page URL"
+// @Failure 400 {string} string "Invalid ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /{id} [get]
 func (h Handler) Redirect(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.Redirect"),
@@ -156,6 +195,16 @@ type checkoutRequest struct {
 	} `json:"object"`
 }
 
+// Checkout updates payment status
+// @Summary Update payment status
+// @Description Update payment status according to payment provider webhook data
+// @Tags payments
+// @Accept json
+// @Param request body checkoutRequest true "Checkout request"
+// @Success 200 "Payment status updated"
+// @Failure 400 {string} string "Invalid request"
+// @Failure 500 {string} string "Internal server error"
+// @Router /checkout [post]
 func (h Handler) Checkout(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.Checkout"),
@@ -186,6 +235,17 @@ func (h Handler) Checkout(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// File gets file by ID
+// @Summary Get file by ID
+// @Description Get pdf-file content from MinIO by file ID
+// @Description NOTE: Swagger UI does not support viewing pdf files
+// @Tags files
+// @Produce application/pdf
+// @Param id path string true "File ID"
+// @Success 200 {file} binary "File content"
+// @Failure 400 {string} string "Invalid ID"
+// @Failure 500 {string} string "Internal server error"
+// @Router /files/{id} [get]
 func (h Handler) File(c echo.Context) error {
 	log := slog.Default().With(
 		slog.String("op", "Handler.File"),
