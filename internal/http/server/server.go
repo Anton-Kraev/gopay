@@ -6,8 +6,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
+	swagecho "github.com/swaggo/echo-swagger"
 
 	"github.com/Anton-Kraev/gopay/internal/validator"
+
+	_ "github.com/Anton-Kraev/gopay/docs"
 )
 
 type handlers interface {
@@ -33,6 +36,15 @@ func NewServer(handlers handlers, logger *slog.Logger, validator *validator.Vali
 	}
 }
 
+// InitRoutes init API routes and middlewares
+// @title GoPay API
+// @version 1.0
+// @description API for payment processing and digital goods access management
+// @license.name MIT license
+// @license.url https://opensource.org/licenses/MIT
+// @contact.name Author's contact
+// @contact.url https://t.me/iksvayai
+// @BasePath /api
 func (s Server) InitRoutes() *echo.Echo {
 	e := echo.New()
 
@@ -41,6 +53,8 @@ func (s Server) InitRoutes() *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
 	e.Use(slogecho.New(s.logger))
+
+	e.GET("/swagger/*", swagecho.WrapHandler)
 
 	g := e.Group("/api")
 
