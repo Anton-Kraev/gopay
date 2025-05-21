@@ -6,7 +6,7 @@ import (
 )
 
 func Setup(env string) (logger *slog.Logger) {
-	if env == "local" {
+	if env == "dev" {
 		logger = slog.New(
 			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
 		)

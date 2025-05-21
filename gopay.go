@@ -1,5 +1,3 @@
-//go:generate mockgen -package=mocks -source=./gopay.go -destination=./mocks/gopay_mocks.go
-
 package gopay
 
 import "errors"
