@@ -25,7 +25,7 @@ func LoadConfig(ctx context.Context) (Config, error) {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "env",
-				Usage:   "Environment type (local/dev/prod)",
+				Usage:   "Environment type (dev/prod)",
 				Value:   "dev",
 				Sources: cli.EnvVars("ENV"),
 			},
