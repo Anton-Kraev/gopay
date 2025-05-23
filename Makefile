@@ -1,6 +1,7 @@
 # Tooling
 MOCKGEN := go.uber.org/mock/mockgen@v0.5.2
 SWAG := github.com/swaggo/swag/cmd/swag@v1.16.4
+GOLANGCI_LINT := github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.1.6
 
 # Build configuration
 GOOS ?= $(shell go env GOOS)
@@ -10,6 +11,9 @@ TARGET := ./bin
 # Test configuration
 GO_TEST_FLAGS ?=
 PACKAGES ?= ./...
+
+# Lint configuration
+LINT_FLAGS ?=
 
 # API specific flags
 API_FLAGS := $(if $(ENV),--env=$(ENV)) \
@@ -57,6 +61,11 @@ mock:
 ## test: Run unit tests
 test: docs mock
 	go test $(GO_TEST_FLAGS) $(PACKAGES)
+
+## lint: Run linters
+lint: docs mock
+	go run $(GOLANGCI_LINT) version || go install $(GOLANGCI_LINT)
+	go run $(GOLANGCI_LINT) run $(LINT_FLAGS)
 
 ## clean: Remove build and test artifacts
 clean:
