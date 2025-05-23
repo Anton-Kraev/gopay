@@ -19,7 +19,7 @@ const (
 	StatusPending           Status = "pending"
 	StatusWaitingForCapture Status = "waiting_for_capture"
 	StatusSucceeded         Status = "succeeded"
-	StatusCancelled         Status = "cancelled"
+	StatusCancelled         Status = "canceled"
 )
 
 func (s Status) Validate() bool {
