@@ -1,0 +1,55 @@
+version: "2"
+
+formatters:
+  enable:
+    - gofmt
+    - gci
+
+  settings:
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
+
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+        - blank
+
+linters:
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - revive
+    - thelper
+    - mirror
+    - usestdlibvars
+    - misspell
+    - dupword
+    - loggercheck
+    - exptostd
+    - fatcontext
+    - usetesting
+
+output:
+  sort-order:
+    - linter
+    - severity
+    - file
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
