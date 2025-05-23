@@ -22,6 +22,6 @@ func NewValidator() (*Validator, error) {
 	return &Validator{validator: validate}, nil
 }
 
-func (v *Validator) Validate(i interface{}) error {
+func (v *Validator) Validate(i any) error {
 	return v.validator.Struct(i)
 }

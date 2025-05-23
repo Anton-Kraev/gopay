@@ -8,9 +8,9 @@ import (
 	slogecho "github.com/samber/slog-echo"
 	swagecho "github.com/swaggo/echo-swagger"
 
-	"github.com/Anton-Kraev/gopay/internal/validator"
-
+	// Register generated Swagger docs
 	_ "github.com/Anton-Kraev/gopay/docs"
+	"github.com/Anton-Kraev/gopay/internal/validator"
 )
 
 type handlers interface {
