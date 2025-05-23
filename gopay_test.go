@@ -147,7 +147,7 @@ func TestPaymentManager_CreatePayment(t *testing.T) {
 					Return(&gopay.Payment{Amount: 100, Status: gopay.StatusPending, PaymentLink: "payment"}, nil).
 					Times(1)
 				f.mockStorage.EXPECT().Set(gopay.ID("uuid"), gomock.Any()).
-					DoAndReturn(func(id gopay.ID, payment gopay.Payment) error {
+					DoAndReturn(func(_ gopay.ID, payment gopay.Payment) error {
 						if payment.Amount != 100 || payment.Status != gopay.StatusPending {
 							return errors.New("error create new payment")
 						}
