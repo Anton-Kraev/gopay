@@ -23,7 +23,7 @@
 - GNU Make 3.80+ (опционально, для упрощения сборки)
 
 ## Запуск и тестирование локально
-Ниже рассмотрены инструкции для использования основных команд, для получения списка всех доступных команд воспользуйтесь
+Ниже представлена инструкция по использованию основных команд, для получения списка всех доступных команд воспользуйтесь
 `make help`.
 
 ### Тестирование
@@ -33,22 +33,22 @@ make test
 ```
 
 ### Запуск API
-Ниже приведены доступные настройки запуска (через переменные окружения, переменные Make или флаги Go CLI):
+Ниже приведены доступные настройки запуска (флаг > переменная):
 
-| Переменная               | Значение по умолчанию | Описание                        |
-|--------------------------|-----------------------|---------------------------------|
-| `ENV`                    | `dev`                 | Окружение (dev/prod)            |
-| `GOPAY_HOST`             | `localhost`           | Хост для HTTP-сервера           |
-| `GOPAY_PORT`             | `8080`                | Порт для HTTP-сервера           |
-| `DB_FILE_PATH`           | `data.db`             | Путь к файлу базы данных        |
-| `DB_OPEN_TIMEOUT`        | `10s`                 | Таймаут подключения к БД        |
-| *`YOOKASSA_CHECKOUT_URL` | -                     | URL для вебхука ЮKassa          |
-| *`YOOKASSA_SHOP_ID`      | -                     | Идентификатор магазина в ЮKassa |
-| *`YOOKASSA_API_TOKEN`    | -                     | Секретный токен API ЮKassa      |
+| Флаг Go CLI                | Переменная окружения     | Значение по умолчанию | Описание                        |
+|----------------------------|--------------------------|-----------------------|---------------------------------|
+| `--env`                    | `ENV`                    | `dev`                 | Окружение (dev/prod)            |
+| `--gopay-host `            | `GOPAY_HOST`             | `localhost`           | Хост для HTTP-сервера           |
+| `--gopay-port`/`-p`        | `GOPAY_PORT`             | `8080`                | Порт для HTTP-сервера           |
+| `--db-file-path`           | `DB_FILE_PATH`           | `data.db`             | Путь к файлу базы данных        |
+| `--db-open-timeout`        | `DB_OPEN_TIMEOUT`        | `10s`                 | Таймаут подключения к БД        |
+| *`--yookassa-checkout-url` | *`YOOKASSA_CHECKOUT_URL` | -                     | URL для вебхука ЮKassa          |
+| *`--yookassa-shop-id`      | *`YOOKASSA_SHOP_ID`      | -                     | Идентификатор магазина в ЮKassa |
+| *`--yookassa-api-token`    | *`YOOKASSA_API_TOKEN`    | -                     | Секретный токен API ЮKassa      |
 
 Пример сборки и запуска веб-сервера и API:
 ```shell
-make run-api YOOKASSA_CHECKOUT_URL=<gopay_checkout> YOOKASSA_SHOP_ID=<shop_id> YOOKASSA_API_TOKEN=<api_token>
+go run cmd/api/main.go --yookassa-checkout-url <gopay_checkout> --yookassa-shop-id <shop_id> --yookassa-api-token <api_token>
 ```
 
 > при локальном запуске (серый IP-адрес) уведомления от платежного сервиса (ЮKassa) приходить не будут
@@ -57,18 +57,18 @@ make run-api YOOKASSA_CHECKOUT_URL=<gopay_checkout> YOOKASSA_SHOP_ID=<shop_id> Y
 `http://<GOPAY_HOST>:<GOPAY_PORT>/swagger/index.html`
 
 ### Запуск бота
-Ниже приведены доступные настройки запуска (через переменные окружения, переменные Make или флаги Go CLI):
+Ниже приведены доступные настройки запуска (флаг > переменная):
 
-| Переменная         | Значение по умолчанию   | Описание                                  |
-|--------------------|-------------------------|-------------------------------------------|
-| `GOPAY_SERVER_URL` | `http://127.0.0.1:8080` | Базовый URL сервера                       |
-| *`TG_BOT_TOKEN`    | -                       | Токен бота от BotFather                   |
-| *`TG_ADMIN_IDS`    | -                       | Telegram ID администраторов через запятую |
-
+| Флаг Go CLI          | Переменная окружения | Значение по умолчанию    | Описание                                   |
+|----------------------|----------------------|--------------------------|--------------------------------------------|
+| `--env`              | `ENV`                | `dev`                    | Окружение (dev/prod)                       |
+| `--gopay-server-url` | `GOPAY_SERVER_URL`   | `http://127.0.0.1:8080`  | Базовый URL сервера                        |
+| *`--tg-bot-token`    | *`TG_BOT_TOKEN`      | -                        | Токен бота от BotFather                    |
+| *`--tg-admin-ids`    | *`TG_ADMIN_IDS`      | -                        | Telegram ID администраторов через запятую  |
 
 Пример сборки и запуска Telegram-бота для управления сервисом:
 ```shell
-make run-bot TG_BOT_TOKEN=<token> TG_ADMIN_IDS=<id1>,<id2>
+go run cmd/bot/main.go --tg-bot-token <token> --tg-admin-ids <id1>,<id2>
 ```
 
 ## Установка библиотеки
