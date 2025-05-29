@@ -1,5 +1,9 @@
 # GoPay
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/Anton-Kraev/gopay.svg)](https://pkg.go.dev/github.com/Anton-Kraev/gopay)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Anton-Kraev/gopay)](https://goreportcard.com/report/github.com/Anton-Kraev/gopay)
+[![CI Pipeline](https://github.com/Anton-Kraev/gopay/actions/workflows/ci.yml/badge.svg)](https://github.com/Anton-Kraev/gopay/actions/workflows/ci.yml)
+
 Сервис для управления доступом к цифровым товарам, включающий прием платежей от клиентов и доставку им товаров после оплаты.
 
 ## Функциональность
