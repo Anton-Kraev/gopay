@@ -183,6 +183,8 @@ func (t *Telegram) handleState(ctx context.Context, update telego.Update) error 
 		err = t.handleStateNewPaymentAmount(ctx, update)
 	case stateNewPaymentDescription:
 		err = t.handleStateNewPaymentDescription(ctx, update)
+	case stateNewPaymentLink:
+		err = t.handleStateNewPaymentLink(ctx, update)
 	case stateNewPaymentConfirmation:
 		err = t.handleStateNewPaymentConfirmation(ctx, update)
 	default:
@@ -247,6 +249,29 @@ func (t *Telegram) handleStateNewPaymentDescription(ctx context.Context, update 
 
 	chatID := update.Message.Chat.ID
 	t.newPaymentService[chatID].Description(description)
+	t.fsm[chatID] = stateNewPaymentLink
+
+	return t.sendMessage(
+		ctx,
+		update,
+		"telegram.handleStateNewPaymentDescription",
+		"описание платежа успешно добавлено\nвведите ссылку на ресурс:",
+	)
+}
+
+func (t *Telegram) handleStateNewPaymentLink(ctx context.Context, update telego.Update) error {
+	link := gopay.Link(update.Message.Text)
+	if !link.Validate() {
+		return t.sendMessage(
+			ctx,
+			update,
+			"telegram.handleStateNewPaymentLink",
+			"некорректная ссылка",
+		)
+	}
+
+	chatID := update.Message.Chat.ID
+	t.newPaymentService[chatID].ResourceLink(link)
 	t.fsm[chatID] = stateNewPaymentConfirmation
 
 	keyboard := tu.Keyboard(
@@ -255,9 +280,10 @@ func (t *Telegram) handleStateNewPaymentDescription(ctx context.Context, update 
 			tu.KeyboardButton("нет"),
 		),
 	)
+
 	msg := tu.Message(
 		tu.ID(chatID),
-		"описание успешно добавлено, подтвердить создание платежа со следующими параметрами?:\n"+
+		"ссылка на ресурс успешно добавлена, подтвердить создание платежа со следующими параметрами?:\n"+
 			t.newPaymentService[chatID].String(),
 	).WithReplyMarkup(keyboard)
 

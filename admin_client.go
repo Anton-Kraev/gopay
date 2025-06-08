@@ -45,6 +45,7 @@ type NewPaymentService interface {
 	Currency(currency string) NewPaymentService
 	Amount(amount uint) NewPaymentService
 	Description(description string) NewPaymentService
+	ResourceLink(link Link) NewPaymentService
 	Do() (Link, error)
 
 	String() string
@@ -55,6 +56,7 @@ type newPaymentServiceImpl struct {
 	currency    string
 	amount      uint
 	description string
+	link        Link
 }
 
 func (i *newPaymentServiceImpl) Currency(currency string) NewPaymentService {
@@ -75,18 +77,28 @@ func (i *newPaymentServiceImpl) Description(description string) NewPaymentServic
 	return i
 }
 
+func (i *newPaymentServiceImpl) ResourceLink(link Link) NewPaymentService {
+	i.link = link
+
+	return i
+}
+
 type newPaymentRequest struct {
 	Template PaymentTemplate `json:"template"`
 	User     User            `json:"user"`
 }
 
 func (i *newPaymentServiceImpl) Do() (Link, error) {
+	if !i.link.Validate() {
+		return "", fmt.Errorf("AdminClient.NewPayment: invalid link %s", i.link)
+	}
+
 	req := newPaymentRequest{
 		Template: PaymentTemplate{
 			Currency:     i.currency,
 			Amount:       i.amount,
 			Description:  i.description,
-			ResourceLink: Link("http://127.0.0.1:8080/api/files/123"),
+			ResourceLink: i.link,
 		},
 		User: User{
 			ID:    "id",
@@ -95,7 +107,6 @@ func (i *newPaymentServiceImpl) Do() (Link, error) {
 		},
 	}
 
-	// TODO: generate id more correctly and fix request body
 	resp, err := i.api.R().SetBody(&req).Post("/payments")
 	if err != nil {
 		return "", fmt.Errorf("AdminClient.NewPayment: %w", err)
@@ -109,7 +120,10 @@ func (i *newPaymentServiceImpl) Do() (Link, error) {
 }
 
 func (i *newPaymentServiceImpl) String() string {
-	return fmt.Sprintf("сумма: %d\nвалюта: %s\nописание: %s", i.amount, i.currency, i.description)
+	return fmt.Sprintf(
+		"сумма: %d\nвалюта: %s\nописание: %s\nссылка на ресурс: %s",
+		i.amount, i.currency, i.description, i.link,
+	)
 }
 
 type AllPaymentService interface {

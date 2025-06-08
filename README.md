@@ -25,6 +25,7 @@
 ## Требования к окружению
 - **Go 1.23+**
 - GNU Make 3.80+ (опционально, для упрощения сборки)
+- Docker Compose 2.17+ (опционально, для запуска MinIO)
 
 ## Запуск и тестирование локально
 Ниже представлена инструкция по использованию основных команд, для получения списка всех доступных команд воспользуйтесь
@@ -37,22 +38,31 @@ make test
 ```
 
 ### Запуск API
-Ниже приведены доступные настройки запуска (флаг > переменная):
+Предварительный запуск MinIO в docker-контейнере:
+```shell
+docker-compose up --build
+```
 
-| Флаг Go CLI                | Переменная окружения     | Значение по умолчанию | Описание                        |
-|----------------------------|--------------------------|-----------------------|---------------------------------|
-| `--env`                    | `ENV`                    | `dev`                 | Окружение (dev/prod)            |
-| `--gopay-host `            | `GOPAY_HOST`             | `localhost`           | Хост для HTTP-сервера           |
-| `--gopay-port`/`-p`        | `GOPAY_PORT`             | `8080`                | Порт для HTTP-сервера           |
-| `--db-file-path`           | `DB_FILE_PATH`           | `data.db`             | Путь к файлу базы данных        |
-| `--db-open-timeout`        | `DB_OPEN_TIMEOUT`        | `10s`                 | Таймаут подключения к БД        |
-| *`--yookassa-checkout-url` | *`YOOKASSA_CHECKOUT_URL` | -                     | URL для вебхука ЮKassa          |
-| *`--yookassa-shop-id`      | *`YOOKASSA_SHOP_ID`      | -                     | Идентификатор магазина в ЮKassa |
-| *`--yookassa-api-token`    | *`YOOKASSA_API_TOKEN`    | -                     | Секретный токен API ЮKassa      |
+Ниже приведены доступные настройки запуска API (флаг > переменная):
+
+| Флаг Go CLI                 | Переменная окружения     | Значение по умолчанию | Описание                        |
+|-----------------------------|--------------------------|-----------------------|---------------------------------|
+| `--env`                     | `ENV`                    | `dev`                 | Окружение (dev/prod)            |
+| `--gopay-host `             | `GOPAY_HOST`             | `localhost`           | Хост для HTTP-сервера           |
+| `--gopay-port`/`-p`         | `GOPAY_PORT`             | `8080`                | Порт для HTTP-сервера           |
+| `--db-file-path`            | `DB_FILE_PATH`           | `data.db`             | Путь к файлу базы данных        |
+| `--db-open-timeout`         | `DB_OPEN_TIMEOUT`        | `10s`                 | Таймаут подключения к БД        |
+| *`--yookassa-checkout-url`  | *`YOOKASSA_CHECKOUT_URL` | -                     | URL для вебхука ЮKassa          |
+| *`--yookassa-shop-id`       | *`YOOKASSA_SHOP_ID`      | -                     | Идентификатор магазина в ЮKassa |
+| *`--yookassa-api-token`     | *`YOOKASSA_API_TOKEN`    | -                     | Секретный токен API ЮKassa      |
+| `minio-bucket-name`         | `MINIO_BUCKET_NAME`      | `geopdfs`             | Название Bucket в MinIO         |
+| `minio-url`                 | `MINIO_URL`              | `localhost:9000`      | Базовый URL MinIO               |
+| *`minio-user`               | *`MINIO_USER`            | -                     | Имя пользователя в MinIO        |
+| *`minio-password`           | *`MINIO_PASSWORD`        | -                     | Пароль пользователя в MinIO     |
 
 Пример сборки и запуска веб-сервера и API:
 ```shell
-go run cmd/api/main.go --yookassa-checkout-url <gopay_checkout> --yookassa-shop-id <shop_id> --yookassa-api-token <api_token>
+go run cmd/api/main.go --yookassa-checkout-url <gopay_checkout> --yookassa-shop-id <shop_id> --yookassa-api-token <api_token> --minio-user <user> --minio-password <password>
 ```
 
 > при локальном запуске (серый IP-адрес) уведомления от платежного сервиса (ЮKassa) приходить не будут
@@ -61,7 +71,7 @@ go run cmd/api/main.go --yookassa-checkout-url <gopay_checkout> --yookassa-shop-
 `http://<GOPAY_HOST>:<GOPAY_PORT>/swagger/index.html`
 
 ### Запуск бота
-Ниже приведены доступные настройки запуска (флаг > переменная):
+Ниже приведены доступные настройки запуска бота (флаг > переменная):
 
 | Флаг Go CLI          | Переменная окружения | Значение по умолчанию    | Описание                                   |
 |----------------------|----------------------|--------------------------|--------------------------------------------|
