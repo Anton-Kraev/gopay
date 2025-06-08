@@ -15,10 +15,11 @@ func NewAPICmd() *cli.Command {
 		Name:        "api",
 		Usage:       "Run GoPay API",
 		Description: "GoPay API",
-		UsageText: "api --yookassa-checkout-url <gopay_checkout> " +
-			"--yookassa-shop-id <shop_id> --yookassa-api-token <api_token>",
-		Action: func(_ context.Context, _ *cli.Command) error {
-			if err := api.Start(); err != nil {
+		UsageText: "api " +
+			"--yookassa-checkout-url <gopay_checkout> --yookassa-shop-id <shop_id> --yookassa-api-token <api_token> " +
+			"--minio-user <user> --minio-password <password>",
+		Action: func(ctx context.Context, _ *cli.Command) error {
+			if err := api.Start(ctx); err != nil {
 				return fmt.Errorf("Api.Start: %w", err)
 			}
 
@@ -81,6 +82,34 @@ func NewAPICmd() *cli.Command {
 				Required:    true,
 				Sources:     cli.EnvVars("YOOKASSA_API_TOKEN"),
 				Destination: &api.YookassaAPIToken,
+			},
+			&cli.StringFlag{
+				Name:        "minio-bucket-name",
+				Usage:       "MinIO bucket name",
+				Value:       "geopdfs",
+				Sources:     cli.EnvVars("MINIO_BUCKET_NAME"),
+				Destination: &api.MinioBucketName,
+			},
+			&cli.StringFlag{
+				Name:        "minio-url",
+				Usage:       "MinIO URL",
+				Value:       "http://127.0.0.1:9000",
+				Sources:     cli.EnvVars("MINIO_URL"),
+				Destination: &api.MinioURL,
+			},
+			&cli.StringFlag{
+				Name:        "minio-user",
+				Usage:       "MinIO user",
+				Required:    true,
+				Sources:     cli.EnvVars("MINIO_USER"),
+				Destination: &api.MinioUser,
+			},
+			&cli.StringFlag{
+				Name:        "minio-password",
+				Usage:       "MinIO password",
+				Required:    true,
+				Sources:     cli.EnvVars("MINIO_PASSWORD"),
+				Destination: &api.MinioPassword,
 			},
 		},
 	}

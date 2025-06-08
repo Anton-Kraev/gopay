@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"time"
@@ -8,6 +9,7 @@ import (
 	bolt "go.etcd.io/bbolt"
 
 	"github.com/Anton-Kraev/gopay"
+	"github.com/Anton-Kraev/gopay/internal/client/minio"
 	"github.com/Anton-Kraev/gopay/internal/client/yookassa"
 	"github.com/Anton-Kraev/gopay/internal/http/handler"
 	"github.com/Anton-Kraev/gopay/internal/http/server"
@@ -15,7 +17,6 @@ import (
 	"github.com/Anton-Kraev/gopay/internal/logger"
 	repo "github.com/Anton-Kraev/gopay/internal/repository/bolt"
 	"github.com/Anton-Kraev/gopay/internal/validator"
-	"github.com/Anton-Kraev/gopay/mock"
 )
 
 type API struct {
@@ -27,9 +28,13 @@ type API struct {
 	YookassaCheckoutURL string
 	YookassaShopID      string
 	YookassaAPIToken    string
+	MinioBucketName     string
+	MinioURL            string
+	MinioUser           string
+	MinioPassword       string
 }
 
-func (a *API) Start() error {
+func (a *API) Start(ctx context.Context) error {
 	log := logger.Setup(a.Env)
 	log.Info("Config parsed", slog.Any("config", a))
 
@@ -67,7 +72,15 @@ func (a *API) Start() error {
 		paymentService,
 	)
 
-	fileStorage := mock.FileStorage{}
+	fileStorage, err := minio.NewClient(ctx, minio.Config{
+		BucketName: a.MinioBucketName,
+		URL:        a.MinioURL,
+		User:       a.MinioUser,
+		Password:   a.MinioPassword,
+	})
+	if err != nil {
+		return err
+	}
 
 	hndl := handler.NewHandler(pm, fileStorage)
 

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -10,7 +11,7 @@ import (
 )
 
 type fileStorage interface {
-	GetData(id gopay.ID) ([]byte, error)
+	GetData(ctx context.Context, id gopay.ID) ([]byte, error)
 }
 
 type Handler struct {
@@ -259,7 +260,7 @@ func (h Handler) File(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid request: bad id")
 	}
 
-	data, err := h.fileStorage.GetData(id)
+	data, err := h.fileStorage.GetData(c.Request().Context(), id)
 	if err != nil {
 		log.Error(err.Error())
 
